@@ -67,7 +67,7 @@ div.callout-note.callout-style-default .callout-title {
 
 ## Map of Causality
 
-![](_images/_1/causality_map.png){.r-stretch fig-align="center"}
+![](_images/1/causality_map.png){.r-stretch fig-align="center"}
 
 
 ::: {.source}
@@ -165,12 +165,12 @@ Source: [https://towardsdatascience.com](https://towardsdatascience.com/how-to-u
   - Formal language for causal inference.
   - Methods to estimate causal effects.
 
-![](_images/_1/nobel.jpeg){.r-stretch fig-align="center"}
+![](_images/1/nobel.jpeg){.r-stretch fig-align="center"}
 
 
 ## Causality vs. Correlation
 
-![](_images/_1/hbr.png){.r-stretch fig-align="center"}
+![](_images/1/hbr.png){.r-stretch fig-align="center"}
 
 
 ::: {.source}
@@ -181,7 +181,7 @@ Source: [https://hbr.org/2021/11/leaders-stop-confusing-correlation-with-causati
 
 ## Causality vs. Correlation
 
-![](_images/_1/nicolas_cage.png){.r-stretch fig-align="center"}
+![](_images/1/nicolas_cage.png){.r-stretch fig-align="center"}
 
 
 ::: {.source}
@@ -191,7 +191,7 @@ Source: [https://www.tylervigen.com/spurious- correlations](https://www.tylervig
 
 ## Causality vs. Correlation
 
-![](_images/_1/nobel_choc.png){fig-align="center" height=600}
+![](_images/1/nobel_choc.png){fig-align="center" height=600}
 
 ::: {.source}
 Source: Peters, Jonas. 2015. Causality: Lecture Notes, ETH Zurich.
@@ -209,7 +209,7 @@ Source: Peters, Jonas. 2015. Causality: Lecture Notes, ETH Zurich.
 - Correlation, or better association, is not (entirely) causation, if there is confounding association due to a common cause, i.e. a ***confounder***.
 - E.g. drinking the night before is a common cause of sleeping with shoes on and of waking up with a headache:
 
-![](_images/_1/headache.png){height=400 width="auto" fig-align="center"}
+![](_images/1/headache.png){height=400 width="auto" fig-align="center"}
 <br>
 
 ::: {.source}
@@ -470,7 +470,7 @@ dag %>%
 ## Simpson's Paradox (5)
 
 
-![](_images/_1/simpson_in_hr.png){.r-stretch fig-align="center"}
+![](_images/1/simpson_in_hr.png){.r-stretch fig-align="center"}
 
 
 ::: {.source}
@@ -599,7 +599,7 @@ Formally, $(Y(1), Y(0)) \perp\!\!\!\perp T$.
 
 :::
 
-![](_images/_1/dag_ass4.png){.r-stretch fig-align="center"}
+![](_images/1/dag_ass4.png){.r-stretch fig-align="center"}
 
 
 ## ATE Identification - Intuition {.smaller}
@@ -620,7 +620,7 @@ Formally, $(Y(1), Y(0)) \perp\!\!\!\perp T$.
 - We can then estimate $\mathbb{E}[Y_i|T_i=1] = 0.66$ and $\mathbb{E}[Y_i|T_i=0] = 0.33$ and use these values to replace the missing counterfactuals.
 - *ATE* is now ***identifiable*** in the sense that it can be computed from a purely statistical quantity.
 
-![](_images/_1/flowchart.png){fig-align="center" height=100}
+![](_images/1/flowchart.png){fig-align="center" height=100}
 
 
 ## Assumptions in the PO Framework (3) 
@@ -635,7 +635,7 @@ Formally, $(Y(1), Y(0)) \perp\!\!\!\perp T \, | \, X$.
 
 :::
 
-![](_images/_1/dag_ass5.png){.r-stretch fig-align="center"}
+![](_images/1/dag_ass5.png){.r-stretch fig-align="center"}
 
 
 ## Assumptions in the PO Framework (4) 
