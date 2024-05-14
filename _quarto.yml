@@ -9,3 +9,6 @@ project:
     - slides/05_dml.qmd
 execute:
   freeze: auto  # re-render only when source changes
+  
+format-resources:
+  - assets/author_pic.jpg

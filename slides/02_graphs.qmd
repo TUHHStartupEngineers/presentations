@@ -23,7 +23,7 @@ format:
 #| include: false
 sysfonts::font_add_google("Poppins", "Poppins", regular.wt = 300)
 showtext::showtext_auto()
-source("../R/setup-ggplot2-tie.R")
+source("../assets/setup-ggplot2-tie.R")
 ```
 
 ```{scss}
@@ -1529,4 +1529,4 @@ adjustmentSets(dag)
 - Once we have found an admissible adjustment set, we can estimate the causal effect by matching, inverse probability weighting, or linear regression (if you're willing to assume linearity).
 
 
-{{< include ../R/about.qmd >}}
+{{< include ../assets/about.qmd >}}
