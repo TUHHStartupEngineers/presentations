@@ -1,6 +1,7 @@
 format:
   revealjs: 
     ## PLUGINS
+    # filters: [../R/copy-resources.lua] # This is so resources get copied
     theme: [../css/tie.scss, ../css/tie-logo.scss]
     ## SimpleMenu
     title-slide-attributes:
@@ -43,3 +44,5 @@ format:
     from: markdown+emoji
     ## OTHER
     mainfont: "Poppins"
+    resources:
+      - slides/_images/
