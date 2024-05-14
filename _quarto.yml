@@ -1,6 +1,9 @@
 project:
   type: website
-  output-dir: docs #default anyways
+  output-dir: docs 
   render:
-    - slides/lecture_01.qmd
-    - slides/lecture_02.qmd
+    # - slides/01_intro.qmd
+    # - slides/02_graphs.qmd
+    # - slides/03_exper.qmd
+    # - slides/04_ob_conf.qmd
+    - slides/05_dml.qmd
