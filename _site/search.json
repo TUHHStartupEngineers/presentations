@@ -1,0 +1,86 @@
+[
+  {
+    "objectID": "slides/lecture_02.html#quarto",
+    "href": "slides/lecture_02.html#quarto",
+    "title": "First",
+    "section": "Quarto",
+    "text": "Quarto\nQuarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see https://quarto.org/docs/presentations/."
+  },
+  {
+    "objectID": "slides/lecture_02.html#bullets",
+    "href": "slides/lecture_02.html#bullets",
+    "title": "First",
+    "section": "Bullets",
+    "text": "Bullets\nWhen you click the Render button a document will be generated that includes:\n\nContent authored with markdown\nOutput from executable code"
+  },
+  {
+    "objectID": "slides/lecture_02.html#code",
+    "href": "slides/lecture_02.html#code",
+    "title": "First",
+    "section": "Code",
+    "text": "Code\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "slides/lecture_02.html#why",
+    "href": "slides/lecture_02.html#why",
+    "title": "First",
+    "section": "Why",
+    "text": "Why\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "slides/lecture_02.html#same",
+    "href": "slides/lecture_02.html#same",
+    "title": "First",
+    "section": "Same",
+    "text": "Same\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "slides/lecture_02.html#different",
+    "href": "slides/lecture_02.html#different",
+    "title": "First",
+    "section": "Different",
+    "text": "Different\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "slides/lecture_01.html#quarto",
+    "href": "slides/lecture_01.html#quarto",
+    "title": "First",
+    "section": "Quarto",
+    "text": "Quarto\nQuarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see https://quarto.org/docs/presentations/."
+  },
+  {
+    "objectID": "slides/lecture_01.html#bullets",
+    "href": "slides/lecture_01.html#bullets",
+    "title": "First",
+    "section": "Bullets",
+    "text": "Bullets\nWhen you click the Render button a document will be generated that includes:\n\nContent authored with markdown\nOutput from executable code"
+  },
+  {
+    "objectID": "slides/lecture_01.html#code",
+    "href": "slides/lecture_01.html#code",
+    "title": "First",
+    "section": "Code",
+    "text": "Code\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "slides/lecture_01.html#why",
+    "href": "slides/lecture_01.html#why",
+    "title": "First",
+    "section": "Why",
+    "text": "Why\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "slides/lecture_01.html#same",
+    "href": "slides/lecture_01.html#same",
+    "title": "First",
+    "section": "Same",
+    "text": "Same\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "slides/lecture_01.html#different",
+    "href": "slides/lecture_01.html#different",
+    "title": "First",
+    "section": "Different",
+    "text": "Different\nWhen you click the Render button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2"
+  }
+]

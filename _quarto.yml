@@ -1,0 +1,6 @@
+project:
+  type: website
+  # output-dir: _site #default anyways
+  render:
+    - slides/lecture_01.qmd
+    - slides/lecture_02.qmd
