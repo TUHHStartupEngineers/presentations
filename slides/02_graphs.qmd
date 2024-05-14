@@ -1289,7 +1289,7 @@ dag %>%
 ## Conditioning vs Intervention 
 
 
-![](_images/_2/condition.png){fig-align="center" height=600}
+![](_images/2/condition.png){fig-align="center" height=600}
 
 ::: {.source}
 Neal, Brady (2020). Introduction to causal inference from a Machine Learning Perspective. Course Lecture Notes (draft).

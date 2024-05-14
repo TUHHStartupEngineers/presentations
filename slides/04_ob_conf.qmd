@@ -384,7 +384,7 @@ The resulting estimate $\hat\beta_T$ is `numerically identical` to the estimate 
 ## Controlling for Covariates: FWL Theorem Logic
 
 
-![](_images/_4/controlForX.gif)
+![](_images/4/controlForX.gif)
 
 
 
@@ -471,7 +471,7 @@ modelsummary(ols, vcov = sandwich::vcovHC, estimate = "est = {estimate} (se = {s
 
 ## Matching Idea
 
-![](_images/_4/matchfig.gif)
+![](_images/4/matchfig.gif)
 
 
 ## Matching Methods

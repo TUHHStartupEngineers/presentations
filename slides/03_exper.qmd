@@ -614,7 +614,7 @@ modelsummary(ols, vcov = sandwich::vcovHC,
 - Calculate the ATE in each bootstrap sample via regression
 
 
-![](_images/_3/bootstrap.png){fig-align="center" height=300}
+![](_images/3/bootstrap.png){fig-align="center" height=300}
 
 ::: {.source}
 Source: Huber, Martin (2023). Causal analysis: Impact evaluation and Causal Machine Learning with applications in R. MIT Press, 2023.

@@ -1,5 +1,460 @@
 [
   {
+    "objectID": "slides/05_dml.html#observed-confounding",
+    "href": "slides/05_dml.html#observed-confounding",
+    "title": "(5) Double Machine Learning",
+    "section": "Observed Confounding",
+    "text": "Observed Confounding\n\nWe need these assumptions:\n\n\n\n\nAssumption A1: “Conditional Exchangeability / Unconfoundedness / Ignorability / Independence”.\n\n\n\\(Y_i(t) \\perp\\!\\!\\!\\perp T_i \\mid \\mathbf{X_i = x}, \\forall t \\in \\{0,1,\\dots\\}, \\text{ and } \\mathbf{x} \\in \\mathbb{X}\\).\n\n\n\n\n\n\nAssumption A2: “Positivity / Overlap / Common Support”.\n\n\n\\(0 &lt; P(T_i = t|\\mathbf{X_i = x}), \\forall t \\in \\{0,1,\\dots\\}, \\text{ and } \\mathbf{x} \\in \\mathbb{X}\\).\n\n\n\n\n\n\nAssumption A3: “Stable Unit Treatment Value Assumption (SUTVA).”\n\n\n\\(Y_i = Y(T_i)\\)\n\n\n\n\n… to achieve identification of the ATE:\n\n\n\n\nTheorem: “Identification of the ATE”:\n\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}[Y_i(1)] - \\mathbb{E}[Y_i(0)] = \\mathbb{E_X}[\\mathbb{E}[Y_i|T_i=1,\\mathbf{X_i = x}] - \\mathbb{E}[Y_i|T_i=0, \\mathbf{X_i = x}]]\\)"
+  },
+  {
+    "objectID": "slides/05_dml.html#types-of-parameters",
+    "href": "slides/05_dml.html#types-of-parameters",
+    "title": "(5) Double Machine Learning",
+    "section": "Types of Parameters",
+    "text": "Types of Parameters\nCausal Machine Learning methods force us to distinguish between two types of parameters:\n\n\nTarget parameter is motivated by the research question and defined under modelling assumption,\n\n\ne.g. effect of a treatment on some outcome.\n\n\nNuisance parameters are inputs that are required to obtain the target parameter, but are not relevant for our research question.\n\n\ne.g. propensity scores.\n\nFocus on the target parameter and do not get tempted to interpret every single coefficient from a regression."
+  },
+  {
+    "objectID": "slides/05_dml.html#frisch-waugh-lovell-fwl-theorem",
+    "href": "slides/05_dml.html#frisch-waugh-lovell-fwl-theorem",
+    "title": "(5) Double Machine Learning",
+    "section": "Frisch-Waugh-Lovell (FWL) Theorem",
+    "text": "Frisch-Waugh-Lovell (FWL) Theorem\n\nWe can estimate \\(\\beta_T\\) in a standard linear regression \\(Y_i = \\beta_0 + \\beta_T T_i + \\mathbf{\\beta_{X}' X_i} + \\epsilon_i\\) in a three-stage procedure:\n\n\nRun a regression of the form \\(Y_i = \\beta_{Y0} + \\mathbf{\\beta_{Y \\sim X}' X_i} + \\epsilon_{Y_i \\sim X_i}\\) and extract the estimated residuals \\(\\hat\\epsilon_{Y_i \\sim X_i}\\).\nRun a regression of the form \\(T_i = \\beta_{T0} + \\mathbf{\\beta_{T \\sim X}' X_i} + \\epsilon_{T_i \\sim X_i}\\) and extract the estimated residuals \\(\\hat\\epsilon_{T_i \\sim X_i}\\).\nRun a residual-on-residual regression of the form \\(\\hat\\epsilon_{Y_i \\sim X_i} = \\beta_T \\hat\\epsilon_{T_i \\sim X_i} + \\epsilon_i\\) (no constant).\n\nThe resulting estimate \\(\\hat\\beta_T\\) is numerically identical to the estimate we would get if we just run the full OLS model."
+  },
+  {
+    "objectID": "slides/05_dml.html#target-parameters",
+    "href": "slides/05_dml.html#target-parameters",
+    "title": "(5) Double Machine Learning",
+    "section": "Target Parameters",
+    "text": "Target Parameters\n\nAverage potential outcome (APO): \\(\\mu_t := \\mathbb{E}[Y_i(t)]\\).\n\nWhat is the expected outcome if everybody receives treatment t?\n\nAverage Treatment Effect (ATE): \\(\\tau_{\\text{ATE}} := \\mathbb{E}[Y_i(1)] -  \\mathbb{E}[Y_i(0)] = \\mu_1 - \\mu_0\\).\n\nWhat is the expected treatment effect in the population?\n\n\n\n\nNote that the target parameters are just different aggregations of the Conditional Average Potential Outcome (CAPO): \\(\\mathbb{E}[Y_i(t) \\mid  \\mathbf{X_i = x} ]\\)\n\n\\(\\mu_t := \\mathbb{E}[Y_i(t)] \\overset{LIE}{=} \\mathbb{E}[\\mathbb{E}[Y_i(t) \\mid \\mathbf{X_i = x}]]\\)\n\\(\\tau_{\\text{ATE}} := \\mathbb{E}[Y_i(1)] -  \\mathbb{E}[Y_i(0)] \\overset{LIE}{=} \\mathbb{E}[\\mathbb{E}[Y_i(1) \\mid  \\mathbf{X_i = x}]] - \\mathbb{E}[\\mathbb{E}[Y_i(0) \\mid  \\mathbf{X_i = x} ]]\\).\n\nIt suffices to show that the CAPO is identified."
+  },
+  {
+    "objectID": "slides/05_dml.html#general-approach",
+    "href": "slides/05_dml.html#general-approach",
+    "title": "(5) Double Machine Learning",
+    "section": "General Approach",
+    "text": "General Approach\n\nCausal Machine Learning methods are mostly about rewriting stuff such that we are allowed to leverage supervised ML to estimate the nuisance parameters.\nImportantly, the target parameters of interest remain the same although the rewritten form can look quite different to the original/familiar model.\nThe methods usually boil down to running multiple supervised ML regressions and combining their predictions into a final OLS regression.\nSupervised ML holds the promise of data-driven model selection and complex non-linear relationships, and thus, getting (one of) the nuisance parameters right.\nThe crucial point is that the statistical inference in this final OLS regression is valid if we follow a particular recipe.\n\nRecipe of how to split the estimation of causal effects into prediction tasks."
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-methods-idea",
+    "href": "slides/05_dml.html#doubly-robust-methods-idea",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Methods: Idea",
+    "text": "Doubly Robust Methods: Idea\n\nGiven the three assumptions hold, we have seen two ways to identify the ATE: \\(\\tau_{\\text{ATE}} = \\mathbb{E}[Y_i(1)] - \\mathbb{E}[Y_i(0)] = \\mu_1 - \\mu_0\\)\n\n\n\nConditional outcome regression:\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E_X}[\\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i = x}] - \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i = x}]]\\)\nSimplified notation with nuisance parameter \\(\\mu(t, \\mathbf{x}) = \\mathbb{E}[Y_i | T_i = t, \\mathbf{X_i = x}]\\) as conditional average potential outcome:\n\\(\\tau_{\\text{ATE}} = \\mathbb{E_X}[\\mu(t = 1, \\mathbf{x}) - \\mu(t=0,\\mathbf{x})]\\)\n\n\n\n\n\nInverse probability weighting:\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}\\left[\\frac{T_i Y_i}{P(T_i = 1 \\mid \\mathbf{X_i = x})}\\right] - \\mathbb{E}\\left[\\frac{(1 - T_i) Y_i}{1 - P(T_i = 1 \\mid \\mathbf{X_i})}\\right]\\)\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}\\left[\\frac{T_i Y_i}{PS(\\mathbf{X_i})}\\right] - \\mathbb{E}\\left[\\frac{(1 - T_i) Y_i}{1 - PS(\\mathbf{X_i})}\\right]\\)\nSimplified notation with nuisance parameter \\(e_t(\\mathbf{x}) = P(T_i = t \\mid \\mathbf{X_i = x})\\) as propensity score:\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}\\left[\\frac{\\mathbb{1}(T_i = 1) Y_i}{e_{t=1}(\\mathbf{x})}\\right] - \\mathbb{E}\\left[\\frac{\\mathbb{1}(T_i = 0) Y_i}{e_{t=0}(\\mathbf{x})}\\right]\\)\n\n\n\n\n\nIdea of doubly robust methods:\n\nCombine both approaches, such that the ATE estimator is consistent, even if only one of the two models is correctly specified."
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-definition",
+    "href": "slides/05_dml.html#doubly-robust-estimator-definition",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Definition",
+    "text": "Doubly Robust Estimator: Definition\n\nDoubly robust or Augmented Inverse Propensity Score Weighting (AIPW) estimator:\nConditional average potential outcome (CAPO) given by:\n\n\\[\n\\begin{align*}\n\\mu_t^{\\text{AIPW}}(\\mathbf{x}) := \\mathbb{E}[Y_i(t) | \\mathbf{X_i = x}] &\\overset{(A1,A3)}{=} \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i = x}] := \\mu(t, \\mathbf{x}) \\\\\n&\\text{(conditional outcome regression)} \\\\\n&\\overset{(2)}{=} \\mathbb{E}\\left[\\frac{\\mathbb{1}(T_i = t)Y_i}{e_t(x)} \\bigg| \\mathbf{X_i = x}\\right] \\\\\n&\\text{(inverse probability weighting)} \\\\\n&\\overset{(3)}{=} \\mathbb{E}\\bigg[\\mu(t, \\mathbf{x}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{x}))}{e_t(\\mathbf{x})} \\bigg| \\mathbf{X_i = x}\\bigg] \\\\\n&\\text{(augmenting outcome regression with IPW weights)} \\\\\n\\end{align*}\n\\]\n\n\nAverage potential outcome (APO) given by:\n\\[\\mu_t^{\\text{AIPW}} = \\mathbb{E_x}\\bigg[\\mathbb{E}\\bigg[\\mu(t, \\mathbf{x}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{x}))}{e_t(\\mathbf{x})} \\bigg| \\mathbf{X_i = x}\\bigg] \\bigg] = \\mathbb{E}\\bigg[\\mu(t, \\mathbf{x}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{x}))}{e_t(\\mathbf{x})} \\bigg] \\\\\\]"
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-proof",
+    "href": "slides/05_dml.html#doubly-robust-estimator-proof",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Proof",
+    "text": "Doubly Robust Estimator: Proof\n\nProof for Equation (2):\n\n\\[\n\\begin{align*}\n\\mu_t(\\mathbf{x}) := \\mathbb{E}[Y_i(t) | \\mathbf{X_i = x}] &= \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i = x}]\\\\\n&= \\mathbb{E}[\\underbrace{\\mathbb{1}(T_i = t)}_{=1} Y_i \\mid T_i = t, \\mathbf{X_i = x}]\\\\\n&= \\mathbb{E}\\left[ \\mathbb{1}(T_i = t) \\frac{e_t(\\mathbf{x})}{e_t(\\mathbf{x})} \\mid {T_i = t, \\mathbf{X_i = x}}\\right] + (1 - e_t(\\mathbf{x})) \\mathbb{E}[\\underbrace{\\mathbb{1}(T_i = t)}_{=0} Y_i \\mid T_i \\neq t, \\mathbf{X_i = x}]/e_t(\\mathbf{x})\\\\\n&= \\frac{\\overbrace{e_t(\\mathbf{x}) \\mathbb{E}[\\mathbb{1}(T_i = t) Y_i \\mid T_i = t, \\mathbf{X_i = x}] + (1 - e_t(\\mathbf{x})) \\mathbb{E}[\\mathbb{1}(T_i = t) Y_i \\mid T_i \\neq t, \\mathbf{X_i = x}]}^{\\overset{LIE}{=}\\mathbb{E}[\\mathbb{1}(T_i = t) Y_i | \\mathbf{X_i = x}]}}{e_t(\\mathbf{x})} \\\\\n&= \\frac{\\mathbb{E}\\left[\\mathbb{1}(T_i = t)Y_i \\mid \\mathbf{X_i = x} \\right]}{e_t(\\mathbf{x})} = \\mathbb{E}\\left[\\frac{\\mathbb{1}(T_i = t)Y_i}{e_t(\\mathbf{x})} \\bigg| \\mathbf{X_i = x}\\right]\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-proof-1",
+    "href": "slides/05_dml.html#doubly-robust-estimator-proof-1",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Proof",
+    "text": "Doubly Robust Estimator: Proof\n\nProof for Equation (3):\n\n\\[\n\\begin{align*}\n\\mu_t(\\mathbf{x}) := \\mathbb{E}[Y_i(t) | \\mathbf{X_i = x}] &= \\mathbb{E}\\left[\\mu(t, \\mathbf{x}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{x}))}{e_t(\\mathbf{x})} \\bigg| \\mathbf{X_i = x}\\right] \\\\\n&= \\mathbb{E}\\left[Y_i(t) - Y_i(t) + \\mu(t, \\mathbf{x}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{x}))}{e_t(\\mathbf{x})} \\bigg| \\mathbf{X_i = x}\\right] \\\\\n&= \\mathbb{E}\\left[Y_i(t) - Y_i(t) + \\mu(t, \\mathbf{x}) + \\frac{\\mathbb{1}(T_i = t)(Y_i(t) - \\mu(t, \\mathbf{x}))}{e_t(\\mathbf{x})} \\bigg| \\mathbf{X_i = x}\\right] \\\\\n&= \\mathbb{E}[Y_i(t) \\mid \\mathbf{X_i = x}] + \\mathbb{E} \\left[(Y_i(t) - \\mu(t, \\mathbf{x})) \\bigg(\\frac{\\mathbb{1}(T_i = t) - e_t(\\mathbf{x})}{e_t(\\mathbf{x})}\\bigg) \\bigg| \\mathbf{X_i = x} \\right] \\\\\n&\\overset{(4)}{=} \\mu_t(\\mathbf{x}) + \\underbrace{\\mathbb{E} \\left[ (Y_i(t) - \\mu(t, \\mathbf{x})) \\bigg(\\frac{\\mathbb{1}(T_i = t) - e_t(\\mathbf{x})}{e_t(\\mathbf{x})}\\bigg) \\bigg| \\mathbf{X_i = x} \\right]}_{\\text{needs to be 0 for the conditional APO to be identified}}\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-proof-2",
+    "href": "slides/05_dml.html#doubly-robust-estimator-proof-2",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Proof",
+    "text": "Doubly Robust Estimator: Proof\n\nProof for Equation (4):\nLet \\(\\tilde{\\mu}(t,\\mathbf{x})\\) and \\(\\tilde{e}_{t}(\\mathbf{x})\\) be some candidate functions for the conditional outcome regression and the propensity score, respectively.\n\n\\[\n\\begin{align*}\n\\mathbb{E} \\left[ (Y_i(t) - \\tilde{\\mu}(t, \\mathbf{x})) \\bigg(\\frac{\\mathbb{1}(T_i = t) - \\tilde{e}_t(\\mathbf{x})}{\\tilde{e}_t(\\mathbf{x})}\\bigg) \\bigg| \\mathbf{X_i = x} \\right] &= \\mathbb{E} [ (Y_i(t) - \\tilde{\\mu}(t, \\mathbf{x})) \\mid \\mathbf{X_i = x}] \\mathbb{E} \\left[ \\bigg(\\frac{\\mathbb{1}(T_i = t) - \\tilde{e}_t(\\mathbf{x})}{\\tilde{e}_t(\\mathbf{x})}\\bigg) \\bigg| \\mathbf{X_i = x} \\right] \\\\\n&\\text{(ignorability allows to separate expectations)} \\\\\n&= (\\mathbb{E} [ Y_i(t) \\mid \\mathbf{X_i = x}] - \\tilde{\\mu}(t, \\mathbf{x}))   \\bigg(\\frac{\\mathbb{E} [\\mathbb{1}(T_i = t \\mid \\mathbf{X_i = x} ] - \\tilde{e}_t(\\mathbf{x})}{\\tilde{e}_t(\\mathbf{x})}\\bigg)  \\\\\n&= (\\mu_t(\\mathbf{x}) - \\tilde{\\mu}(t, \\mathbf{x})) \\frac{(e_t(\\mathbf{x}) - \\tilde{e}_t(\\mathbf{x}))}{\\tilde{e}_t(\\mathbf{x})} \\\\\n\\end{align*}\n\\]\n\n\nthe last expression becomes 0 if either \\(\\tilde{\\mu}(t, \\mathbf{x}) = \\mu_t(\\mathbf{x})\\) or \\(\\tilde{e}_t(\\mathbf{x}) = e_t(\\mathbf{x})\\)."
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-theorem",
+    "href": "slides/05_dml.html#doubly-robust-estimator-theorem",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Theorem",
+    "text": "Doubly Robust Estimator: Theorem\n\nAugmentation leads to the following theoretical properties:\n\n\n\n\nTheorem 4.3: “Doubly Robust Estimator”.\n\n\nGiven \\(Y_i(t) \\perp\\!\\!\\!\\perp T_i \\mid \\mathbf{X_i = x}\\) (conditional unconfoundedness) and given \\(0 &lt; P(T_i = t|\\mathbf{X_i = x}), \\forall t\\) (positivity), then:\n\nIf either \\(\\tilde{e}_{t}(\\mathbf{x}) = e_t(\\mathbf{x})\\) or \\(\\tilde{\\mu}(t = 1,\\mathbf{x}) = \\mu_1(\\mathbf{x})\\), then \\(\\mu_{1} = \\mathbb{E}[Y_i(1)]\\)\nIf either \\(\\tilde{e}_{t}(\\mathbf{x}) = e_t(\\mathbf{x})\\) or \\(\\tilde{\\mu}(t = 0,\\mathbf{x}) = \\mu_0(\\mathbf{x})\\), then \\(\\mu_{0} = \\mathbb{E}[Y_i(0)]\\)\nIf either \\(\\tilde{e}_{t}(\\mathbf{x}) = e_t(\\mathbf{x})\\) or \\(\\tilde{\\mu}(t = 1,\\mathbf{x}) = \\mu_1(\\mathbf{x}), \\tilde{\\mu}(t = 0,\\mathbf{x}) = \\mu_0(\\mathbf{x})\\), then \\(\\mu_{1} - \\mu_{0} = \\tau_{\\text{ATE}}\\)\n\n\n\n\n\nwith \\(\\tilde{\\mu}(t,\\mathbf{x})\\) and \\(\\tilde{e}_{t}(\\mathbf{x})\\) being some candidate functions for the conditional outcome regression and the propensity score, respectively."
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-theorem-1",
+    "href": "slides/05_dml.html#doubly-robust-estimator-theorem-1",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Theorem",
+    "text": "Doubly Robust Estimator: Theorem\n\nProof showing that \\(\\mu_{t} = \\mathbb{E}[Y_i(t)]\\):\n\n\\[\n\\begin{align*}\n\\tilde{\\mu}_{t} - \\mathbb{E}[Y_i(t)] &= \\mathbb{E}\\bigg[\\tilde{\\mu}(t, \\mathbf{x}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\tilde{\\mu}(t, \\mathbf{x}))}{\\tilde{e}_t(\\mathbf{x})} \\bigg] -  \\mathbb{E}[Y_i(t)] &\\text{(by defintion)} \\\\\n&= \\mathbb{E}\\bigg[\\frac{\\mathbb{1}(T_i = t)(Y_i - \\tilde{\\mu}(t, \\mathbf{x}))}{\\tilde{e}_t(\\mathbf{x})} - (Y_i(t) -  \\tilde{\\mu}(t, \\mathbf{x}))\\bigg] &\\text{(linearity of expectations)} \\\\\n&= \\mathbb{E}\\left[\\frac{\\mathbb{1}(T_i = t) - \\tilde{e}_t(\\mathbf{x})}{\\tilde{e}_t(\\mathbf{x})}(Y_i(t) - \\tilde{\\mu}(t, \\mathbf{x}))\\right] &\\text{(combining terms)} \\\\\n&= \\mathbb{E}\\left(\\mathbb{E}\\left[\\frac{\\mathbb{1}(T_i = t) - \\tilde{e}_t(\\mathbf{x})}{\\tilde{e}_t(\\mathbf{x})}(Y_i(t) - \\tilde{\\mu}(t, \\mathbf{x}) \\bigg| \\mathbf{X_i}\\right]\\right) &\\text{(law of iterated expectations)} \\\\\n&= \\mathbb{E}\\left(\\mathbb{E}\\left[\\frac{\\mathbb{1}(T_i = t) - \\tilde{e}_t(\\mathbf{x})}{\\tilde{e}_t(\\mathbf{x})} \\bigg| \\mathbf{X_i}\\right] \\cdot \\mathbb{E}\\left[Y_i(t) - \\tilde{\\mu}(t, \\mathbf{x})  \\bigg| \\mathbf{X_i}\\right]\\right) &\\text{(ignorability allows to separate expectations)} \\\\\n&= \\mathbb{E}\\left( \\frac{(e_t(\\mathbf{x}) - \\tilde{e}_t(\\mathbf{x}))}{\\tilde{e}_t(\\mathbf{x})}(\\mu_t(\\mathbf{x}) - \\tilde{\\mu}(t, \\mathbf{x}))\\right) \\\\\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-sample-version",
+    "href": "slides/05_dml.html#doubly-robust-estimator-sample-version",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Sample Version",
+    "text": "Doubly Robust Estimator: Sample Version\n\nStep 1: obtain the fitted values of the propensity scores:\n\n\\(\\hat{e}_t(\\mathbf{X_i})\\)\n\nStep 2: obtain the fitted values of the outcome regressions:\n\n\\(\\hat{\\mu}(t, \\mathbf{X_i})\\).\n\nStep 3: construct the doubly robust estimator:\n\n\\(\\hat{\\tau}_{\\text{ATE}} = \\hat{\\mu}_{1} - \\hat{\\mu}_{0}\\) with\n\\(\\hat{\\mu}_{1} = \\frac{1}{n} \\sum_{i=1}^n \\left[\\hat{\\mu}(t= 1, \\mathbf{X_i}) + \\frac{\\mathbb{1}(T_i = 1)(Y_i - \\hat{\\mu}(t = 1, \\mathbf{ X_i})}{\\hat{e}_1(\\mathbf{X_i})}\\right]\\)\n\\(\\hat{\\mu}_{0} = \\frac{1}{n} \\sum_{i=1}^n \\left[\\hat{\\mu}(t= 0, \\mathbf{X_i}) + \\frac{\\mathbb{1}(T_i = 0)(Y_i - \\hat{\\mu}(t = 0, \\mathbf{ X_i})}{\\hat{e}_0(\\mathbf{X_i})}\\right]\\)"
+  },
+  {
+    "objectID": "slides/05_dml.html#doubly-robust-estimator-example",
+    "href": "slides/05_dml.html#doubly-robust-estimator-example",
+    "title": "(5) Double Machine Learning",
+    "section": "Doubly Robust Estimator: Example",
+    "text": "Doubly Robust Estimator: Example\n\nAssess the impact of participating in the U.S. National Supported Work (NSW) training program targeted to 445 individuals with social and economic problems on their real earnings.\n\n\nlibrary(Matching)                       # load Matching package\ndata(lalonde)                           # load lalonde data\nattach(lalonde)                         # store all variables in own objects\nlibrary(drgee)                          # load drgee package\nT = treat                              # define treatment (training)\nY = re78                                # define outcome \nX = cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\ndr = drgee(oformula = formula(Y ~ X), eformula = formula(T ~ X), elink=\"logit\") # DR reg\nsummary(dr)                             # show results\n\n\nCall:  drgee(oformula = formula(Y ~ X), eformula = formula(T ~ X), elink = \"logit\")\n\nOutcome:  Y \n\nExposure:  T \n\nCovariates:  Xage,Xeduc,Xnodegr,Xmarried,Xblack,Xhisp,Xre74,Xre75,Xu74,Xu75 \n\nMain model:  Y ~ T \n\nOutcome nuisance model:  Y ~ Xage + Xeduc + Xnodegr + Xmarried + Xblack + Xhisp + Xre74 + Xre75 + Xu74 + Xu75 \n\nOutcome link function:  identity \n\nExposure nuisance model:  T ~ Xage + Xeduc + Xnodegr + Xmarried + Xblack + Xhisp + Xre74 + Xre75 + Xu74 + Xu75 \n\nExposure link function:  logit \n\n  Estimate Std. Error z value Pr(&gt;|z|)  \nT   1674.1      672.4    2.49   0.0128 *\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\n(Note: The estimated parameters quantify the conditional\nexposure-outcome association, given the covariates\nincluded in the nuisance models)\n\n 445  complete observations used"
+  },
+  {
+    "objectID": "slides/05_dml.html#partially-linear-regression-model",
+    "href": "slides/05_dml.html#partially-linear-regression-model",
+    "title": "(5) Double Machine Learning",
+    "section": "Partially Linear Regression Model",
+    "text": "Partially Linear Regression Model\n\nObserved \\(Y_i\\) and \\(T_i\\) are a partially linear function of confounding variables \\(X_i\\): \\(\\begin{align}\\begin{aligned}Y_i = \\tau T_i + g(\\mathbf{X_i}) + \\epsilon_{Y_i}, & &\\mathbb{E}(\\epsilon_{Y_i} | T_i,\\mathbf{X_i}) = 0 \\\\T_i = m(\\mathbf{X_i}) + \\epsilon_{T_i}, & &\\mathbb{E}(\\epsilon_{T_i} | \\mathbf{X_i}) = 0\\end{aligned}\\end{align}\\)\n\n\n\nConditional average potential outcome:\n\n\\(\\mathbb{E}[Y_i(t) | \\mathbf{X_i}] \\overset{(A1, A3)}{=} \\mathbb{E}[Y_i | T_i = t, \\mathbf{X_i}] = \\tau t + g(\\mathbf{X_i})\\)\n\n\n\n\n\nTarget parameters:\n\n\\(\\tau_{\\text{CATE}} = \\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i}] - \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i}]\\)\n\\(\\tau_{\\text{CATE}} = (\\tau 1 + g(\\mathbf{X_i})) - (\\tau 0 + g(\\mathbf{X_i})) = \\tau\\)\n\\(\\tau_{\\text{ATE}} = \\mathbb{E_X}[\\beta_T] = \\tau\\)\n=&gt; homogeneous treatment effects"
+  },
+  {
+    "objectID": "slides/05_dml.html#identification-under-partial-linearity",
+    "href": "slides/05_dml.html#identification-under-partial-linearity",
+    "title": "(5) Double Machine Learning",
+    "section": "Identification under Partial Linearity",
+    "text": "Identification under Partial Linearity\n\nFollowing Robinson (1988), we can write the partially linear regression model as a generalization of the Frisch-Waugh-Lovell theorem:\n\n\\(\\underbrace{Y_i - \\overbrace{\\mathbb{E}[Y_i \\mid \\mathbf{X_i}]}^{\\mu(\\mathbf{X_i})}}_{\\text{outcome residual}} = \\tau \\underbrace{( T_i - \\overbrace{\\mathbb{E}[T_i \\mid \\mathbf{X_i}]}^{e(\\mathbf{X_i})})}_{\\text{treatment residual}} + \\epsilon_{Y_i}\\)\n\n\n\n\n\\(\\tau_{\\text{ATE}}\\) is identified by a residual-on-residual regression without constant:\n\nPopulation estimand:\n\n\\(\\tau_{\\text{ATE}} = \\arg \\min_{\\tilde{\\tau}} \\mathbb{E}[( \\underbrace{ Y_i - \\mu(\\mathbf{X_i})}_{\\text{pseudo outcome}} - \\tilde{\\tau} \\underbrace{( T_i - e(\\mathbf{X_i}))}_{\\text{single regressor}})^2] = \\frac{\\text{Cov}[(Y_i - \\mu(\\mathbf{X_i})) (T_i - e(\\mathbf{X_i}))]}{\\text{Var}[T_i - e(\\mathbf{X_i})]}\\)\n\nSample estimator:\n\n\\(\\hat{\\tau}_{\\text{ATE}} = \\arg \\min_{\\tilde{\\tau}} \\frac{1}{N}\\sum_{i=1}^n ( \\underbrace{Y_i - \\mu(\\mathbf{X_i})}_{\\text{pseudo outcome}} - \\tilde{\\tau} \\underbrace{( T_i - e(\\mathbf{X_i}))}_{\\text{single regressor}})^2 = \\frac{\\sum_{i=1}^n (Y_i - \\mu(\\mathbf{X_i})) (T_i - e(\\mathbf{X_i}))}{\\sum_{i=1}^n (T_i - e(\\mathbf{X_i}))^2}\\)\n\n\n\n\n\n\nHowever, regression not feasible because nuisance parameters unknown: ML toolbox might be useful."
+  },
+  {
+    "objectID": "slides/05_dml.html#double-machine-learning-under-partial-linearity",
+    "href": "slides/05_dml.html#double-machine-learning-under-partial-linearity",
+    "title": "(5) Double Machine Learning",
+    "section": "Double Machine Learning under Partial Linearity",
+    "text": "Double Machine Learning under Partial Linearity\n\nChernozhukov et al. (2018) propose a three step procedure:\n\nForm prediction model for the treatment: \\(\\hat{e}(\\mathbf{X_i})\\)\nForm prediction model for the outcome: \\(\\hat{\\mu}(\\mathbf{X_i})\\)\nRun feasible residual-on-residual regression:\n\n\n\\(\\hat{\\tau}_{\\text{ATE}} = \\arg \\min_{\\tilde{\\tau}} \\frac{1}{N}\\sum_{i=1}^n ( Y_i - \\hat{\\mu}(\\mathbf{X_i}) - \\tilde{\\tau} ( T_i - \\hat{e}(\\mathbf{X_i})))^2 = \\frac{\\sum_{i=1}^n (Y_i - \\hat{\\mu}(\\mathbf{X_i})) (T_i - \\hat{e}(\\mathbf{X_i}))}{\\sum_{i=1}^n (T_i - \\hat{e}(\\mathbf{X_i}))^2}\\)\n\n\n\n\nPredictions of nuisance parameters \\(\\hat{e}(\\mathbf{X_i})\\) and \\(\\hat{\\mu}(\\mathbf{X_i})\\) have to fulfill two conditions:\n\nHigh-quality: consistency and convergence rates faster than \\(N^{\\frac{1}{4}}\\).\nOut-of-sample: individual predictions formed without the observation itself.\n\n=&gt; standard (robust) OLS inference is valid (see Chernozhukov et al. (2018))."
+  },
+  {
+    "objectID": "slides/05_dml.html#high-quality-predictions-in-dml",
+    "href": "slides/05_dml.html#high-quality-predictions-in-dml",
+    "title": "(5) Double Machine Learning",
+    "section": "High Quality Predictions in DML",
+    "text": "High Quality Predictions in DML\n\nConsistency: ML methods converge to the true nuisance parameters as \\(N \\to \\infty\\).\nConvergence rate:\n\nParametric models like OLS converge at the rate \\(N^{\\frac{1}{2}}\\):\n\nRMSE (\\(\\mathbb{E}[\\sqrt{(\\hat{\\mu}(\\mathbf{X_i}) - \\mu(\\mathbf{X_i}))^2}]\\)) expected to halve if sample increases by factor four\n\nML methods usually do not converge as quickly because they can not leverage the structural information of a parametric model.\nFor Double ML to work, it suffices that the RMSE more than halves if we increase sample size by factor 16 (convergence rate: \\(N^{\\frac{1}{4}}\\)).\nAchievable with popular ML methods like (Post-) LASSO, Random Forests, or Neural Networks ."
+  },
+  {
+    "objectID": "slides/05_dml.html#out-of-sample-predictions-in-dml",
+    "href": "slides/05_dml.html#out-of-sample-predictions-in-dml",
+    "title": "(5) Double Machine Learning",
+    "section": "Out-of-Sample Predictions in DML",
+    "text": "Out-of-Sample Predictions in DML\n\n\n\nK-fold Cross-Fitting:\n\nSplit the sample into \\(K\\) folds.\nFor each fold \\(k\\), train a prediction model for the nuisance parameters on the remaining \\(K-1\\) folds.\nPredict the nuisance parameters for fold \\(k\\) using the model trained on the remaining \\(K-1\\) folds.\nRepeat for all \\(K\\) folds to obtain predictions for each individual observation in each fold.\nUse combined predictions for the residual-on-residual regression.\n\n\n\n\n\n\n\n\n\n\n\n=&gt; Predictions are formed without the observation itself, still no waste of information.\n=&gt; Nuisance parameters induce no bias by overfitting (Chernozhukov et al. (2018))."
+  },
+  {
+    "objectID": "slides/05_dml.html#neyman-orthogonal-score-functions",
+    "href": "slides/05_dml.html#neyman-orthogonal-score-functions",
+    "title": "(5) Double Machine Learning",
+    "section": "Neyman-orthogonal Score Functions",
+    "text": "Neyman-orthogonal Score Functions\n\nPredicted nuisance parameters have to be used in a Neyman-orthogonal score function (score) \\(\\psi\\)!\n\\(\\psi\\) has to satisfy moment condition \\(\\mathbb{E}[\\psi(Y_i,T_i,\\hat{\\tau}, \\hat{\\mu}(\\mathbf{X_i}), \\hat{e}(\\mathbf{X_i}))] = 0\\) to identify the target parameter \\(\\tau_{\\text{ATE}}\\).\nIn PLR, \\(\\psi\\) is the solution to the minimization problem of the residual-on-residual regression - derivative w.r.t. \\(\\hat{\\tau}\\):\n\n\\[\\begin{align*}\n&\\frac{1}{N} \\sum_{i=1}^N \\underbrace{(Y_i - \\hat{\\mu}(\\mathbf{X_i}) - \\hat{\\tau}(T_i - \\hat{e}(\\mathbf{X_i}))) (T_i - \\hat{e}(X_i))}_{\\psi(Y_i, T_i, \\hat{\\tau}, \\hat{\\mu}(\\mathbf{X_i}), \\hat{e}(\\mathbf{X_i}))} = 0 \\\\\n\\Rightarrow \\hat{\\tau}_{\\text{ATE}} &= \\frac{\\sum_{i=1}^n (Y_i - \\hat{\\mu}(\\mathbf{X_i})) (T_i - \\hat{e}(\\mathbf{X_i}))}{\\sum_{i=1}^n (T_i - \\hat{e}(\\mathbf{X_i}))^2}\n\\end{align*}\\]\n\n\nNeyman-orthogonality of score \\(\\psi(Y_i,T_i,\\hat{\\tau}, \\hat{\\mu}(\\mathbf{X_i}), \\hat{e}(\\mathbf{X_i}))\\):\n\n(Gateaux) derivative of the score function with respect to the nuisance parameters is zero in expectation at the true value of the nuisance parameters:\n\n\\(\\partial_r \\mathbb{E}[\\psi(Y_i, T_i, \\hat{\\tau}, \\mu(\\mathbf{X_i}) + r(\\mu(\\mathbf{X_i}) - \\hat{\\mu}(\\mathbf{X_i})), e(\\mathbf{X_i}) + r(e(\\mathbf{X_i}) - \\hat{e}(\\mathbf{X_i})))]\\mid_{r=0} = 0\\)\n\nEnsures that the \\(\\hat{\\tau}\\) is robust against biases in the prediction of nuisance parameters (e.g. by regularization).\nNote (without proof): residual-on-residual regression fulfills this requirement!"
+  },
+  {
+    "objectID": "slides/05_dml.html#overcoming-regularization-overfitting-bias",
+    "href": "slides/05_dml.html#overcoming-regularization-overfitting-bias",
+    "title": "(5) Double Machine Learning",
+    "section": "Overcoming Regularization & Overfitting Bias",
+    "text": "Overcoming Regularization & Overfitting Bias\n\nCompare a non-orthogonal score function, e.g. \\(\\hat{\\tau}_{\\text{ATE}} = \\frac{\\sum_{i=1}^n T_i (Y_i - \\hat{\\mu}(\\mathbf{X_i}))}{\\sum_{i=1}^n T_i^2}\\) to orthogonal one: \\(\\hat{\\tau}_{\\text{ATE}} = \\frac{\\sum_{i=1}^n (Y_i - \\hat{\\mu}(\\mathbf{X_i})) (T_i - \\hat{e}(\\mathbf{X_i}))}{\\sum_{i=1}^n (T_i - \\hat{e}(\\mathbf{X_i}))^2}\\).\n\n\n\n\nCompare with and without K-fold Cross-Fitting.\n\n\n\n\n\n\n\n\n\n\n\n\n# simulating the data\nlibrary(DoubleML)\nset.seed(1234)\nn_rep = 1000 # number samples\nn_obs = 500 # number of observations\nn_vars = 20 # number of covariates\nalpha = 0.5 # true treatment effect\n\n\ndata = list()\nfor (i_rep in seq_len(n_rep)) {\n# command to simulate Y_i and T_i based on true non-linear nuisance functions m(x) and e(x)\n  data[[i_rep]] = make_plr_CCDDHNR2018(alpha=alpha, n_obs=n_obs, dim_x=n_vars,\n                                       return_type=\"data.frame\")\n}\n\n# define custom (non-othogonal) score function\nnon_orth_score = function(y, d, l_hat, m_hat, g_hat, smpls) {\n  u_hat = y - g_hat\n  psi_a = -1*d*d\n  psi_b = d*u_hat\n  psis = list(psi_a = psi_a, psi_b = psi_b)\n  return(psis)\n}\n\nlibrary(mlr3)\nlibrary(mlr3learners)\n\n# define the ml prediction models from the mlr3 package:\nml_l = lrn(\"regr.ranger\", num.trees = 132, max.depth = 5, mtry = 12, min.node.size = 1) # learner for mu = E[Y|X]\nml_m = lrn(\"regr.ranger\", num.trees = 378, max.depth = 3, mtry = 20, min.node.size = 6) # learner for e = E[T|X]\n\n\n# run the simulation \nfor (i_rep in seq_len(n_rep)) {\n  df = data[[i_rep]]\n  obj_dml_data = double_ml_data_from_data_frame(df, y_col = \"y\", d_cols = \"d\")\n  # key function friom the DoubleML package\n  obj_dml_plr_nonorth = DoubleMLPLR$new(obj_dml_data, # suppy data\n                                        ml_l, ml_m, ml_g,# supply the machine learning methods\n                                        n_folds=2, # no cross fitting at first\n                                        score=non_orth_score, # supply custom score function\n                                        # score='partialling out' # built-in orthogonal score function PLM\n                                        apply_cross_fitting=TRUE) # no cross fitting at first\n  # extract and store estimates for each sample\n  obj_dml_plr_nonorth$fit()\n  this_theta = obj_dml_plr_nonorth$coef\n  this_se = obj_dml_plr_nonorth$se\n  print(abs(theta_nonorth[i_rep] - this_theta))\n  print(abs(se_nonorth[i_rep] - this_se))\n  theta_nonorth[i_rep] = this_theta\n  se_nonorth[i_rep] = this_se\n}"
+  },
+  {
+    "objectID": "slides/05_dml.html#interactive-regression-model",
+    "href": "slides/05_dml.html#interactive-regression-model",
+    "title": "(5) Double Machine Learning",
+    "section": "Interactive Regression Model",
+    "text": "Interactive Regression Model\n\nMore general model that relaxes the homogeneous treatment assumption (binary \\(T_i\\) is not additively separable anymore): \\(\\begin{align}\\begin{aligned}Y_i = g(T_i, \\mathbf{X_i}) + \\epsilon_{Y_i}, & &\\mathbb{E}(\\epsilon_{Y_i} | T_i,\\mathbf{X_i}) = 0 \\\\T_i = m(\\mathbf{X_i}) + \\epsilon_{T_i}, & &\\mathbb{E}(\\epsilon_{T_i} | \\mathbf{X_i}) = 0\\end{aligned}\\end{align}\\)\n\n\n\nWe can use the identification results from the Doubly Robust / AIPW estimator:\n\nAverage potential outcome (APO):\n\n\\(\\mu_t^{\\text{AIPW}} = \\mathbb{E}[Y_i(t)] = \\mathbb{E}\\bigg[\\mu(t, \\mathbf{X_i}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{X_i}))}{e_t(\\mathbf{X_i})} \\bigg] \\\\\\)\n\nAverage treatment effect (ATE):\n\n\\(\\tau_{\\text{ATE}}^{\\text{AIPW}} = \\mathbb{E}[Y_i(1) - Y_i(0)] = \\mathbb{E}\\bigg[\\mu(1, \\mathbf{X_i}) - \\mu(0, \\mathbf{X_i}) + \\frac{T_i(Y_i - \\mu(1, \\mathbf{X_i}))}{e_1(\\mathbf{X_i})} - \\frac{(1-T_i)(Y_i - \\mu(0, \\mathbf{X_i})}{e_0(\\mathbf{X_i}))} \\bigg]\\)"
+  },
+  {
+    "objectID": "slides/05_dml.html#double-machine-learning-under-aipw",
+    "href": "slides/05_dml.html#double-machine-learning-under-aipw",
+    "title": "(5) Double Machine Learning",
+    "section": "Double Machine Learning under AIPW",
+    "text": "Double Machine Learning under AIPW\n\nChernozhukov et al. (2018) propose a three step procedure:\n\nForm prediction model for the treatment: \\(\\hat{e}(\\mathbf{X_i})\\)\nForm prediction model for the outcome: \\(\\hat{\\mu}(T_i, \\mathbf{X_i})\\)\n\nEstimate the APO:\n\n\n\n\\(\\mu_t^{\\text{AIPW}} = \\frac{1}{N}\\sum_{i=1}^n \\bigg(\\hat{\\mu}(t, \\mathbf{X_i}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\hat{\\mu}(t, \\mathbf{X_i}))}{\\hat{e}_t(\\mathbf{X_i})} \\bigg) \\\\\\)\n\n\n\nEstimate the ATE:\n\n\n\n\\(\\tau_{\\text{ATE}}^{\\text{AIPW}} = \\frac{1}{N}\\sum_{i=1}^n \\bigg(\\hat{\\mu}(1, \\mathbf{X_i}) - \\hat{\\mu}(0, \\mathbf{X_i}) + \\frac{T_i(Y_i - \\hat{\\mu}(1, \\mathbf{X_i}))}{\\hat{e}_1(\\mathbf{X_i})} - \\frac{(1-T_i)(Y_i - \\hat{\\mu}(0, \\mathbf{X_i})}{\\hat{e}_0(\\mathbf{X_i}))} \\bigg)\\)\n\n\n\n\nTo obtain a consistent, asymptotically normal and semi-parametrically efficient estimator that allows standard (robust) inference, we need the same three key ingredients:\n\nHigh-quality machine learning methods\nK-fold cross-validation\nNeyman-orthogonal score function: let’s proof this!"
+  },
+  {
+    "objectID": "slides/05_dml.html#dml-aipw-score-function-1",
+    "href": "slides/05_dml.html#dml-aipw-score-function-1",
+    "title": "(5) Double Machine Learning",
+    "section": "DML-AIPW Score Function (1)",
+    "text": "DML-AIPW Score Function (1)\n\nAs the score defining the ATE is just the difference between APOs, it inherits ist Neyman orthogonality. Hence let’s focus on the AIPW score of the APO, which is:\n\n\\[\\begin{align*}\n&\\mathbb{E}\\bigg[ \\underbrace{\\mu(t, \\mathbf{X_i}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{X_i}))}{e_t(\\mathbf{X_i})} - \\mu_t^{\\text{AIPW}}}_{\\psi(Y_i, T_i, \\mu(t, \\mathbf{X_i}), e(\\mathbf{X_i}))}\\bigg] = 0 \\\\\n\\Rightarrow \\mu_t^{\\text{AIPW}} = & \\mathbb{E}\\bigg[\\mu(t, \\mathbf{X_i}) + \\frac{\\mathbb{1}(T_i = t)(Y_i - \\mu(t, \\mathbf{X_i}))}{e_t(\\mathbf{X_i})} \\bigg]\n\\end{align*}\\]\n\nNeyman-orthogonality of a score \\(\\psi\\) means that the Gateaux derivative with respect to the nuisance parameters is zero in expectation at the true nuisance parameters (NP). This means:\n\n\\[\\partial_r \\mathbb{E}\\left[\\psi(Y_i, T_i, \\mu + r(\\tilde{\\mu}-\\mu), e + r(\\tilde{e} - e)) \\mid \\mathbf{X_i = x}\\right] |_{r=0} = 0\\]\n\nwhere we suppress the dependencies of NPs and denote by, e.g., \\(\\tilde{\\mu}\\) a value of the outcome nuisance that is different to the true value \\(\\mu\\). We can show this equation holds with the following four steps."
+  },
+  {
+    "objectID": "slides/05_dml.html#dml-aipw-score-function-2",
+    "href": "slides/05_dml.html#dml-aipw-score-function-2",
+    "title": "(5) Double Machine Learning",
+    "section": "DML-AIPW Score Function (2)",
+    "text": "DML-AIPW Score Function (2)\n\n\nAdd perturbations to the true nuisance parameters in the score:\n\n\n\\[\n\\begin{align*}\n\\psi&(Y_i, T_i, \\mu + r(\\tilde{\\mu} - \\mu), e + r(\\tilde{e} - e)) \\\\ &= (\\mu + r(\\tilde{\\mu} - \\mu)) + \\frac{ \\mathbb{1}(T_i = t) Y_i}{e + r(\\tilde{e} - e)} - \\frac{\\mathbb{1}(T_i = t) (\\mu + r(\\tilde{\\mu} - \\mu))}{e + r(\\tilde{e} - e)} - \\mu_t^{\\text{AIPW}}\n\\end{align*}\n\\]\n\n\nTake the conditional expectation:\n\n\n\\[\n\\begin{align*}\n&\\mathbb{E}\\left[ \\psi(Y_i, T_i, \\mu + r(\\tilde{\\mu} - \\mu), e + r(\\tilde{e} - e)) \\mid \\mathbf{X_i = x} \\right] \\\\ &= \\mathbb{E}\\left[ (\\mu + r(\\tilde{\\mu} - \\mu)) + \\frac{ \\mathbb{1}(T_i = t) Y_i}{e + r(\\tilde{e} - e)} - \\frac{\\mathbb{1}(T_i = t) (\\mu + r(\\tilde{\\mu} - \\mu))}{e + r(\\tilde{e} - e)} - \\mu_t^{\\text{AIPW}} \\bigg| \\mathbf{X_i = x} \\right] \\\\ &= (\\mu + r(\\tilde{\\mu} - \\mu)) + \\frac{ e\\mu}{e + r(\\tilde{e} - e)} - \\frac{e (\\mu + r(\\tilde{\\mu} - \\mu))}{e + r(\\tilde{e} - e)} - \\mu_t^{\\text{AIPW}}\n\\end{align*}\n\\] - where we use that \\(\\mathbb{E}[\\mathbb{1}(T_i = t)Y_i \\mid \\mathbf{X_i = x}] \\overset{(A3)}{=} \\mathbb{E}[\\mathbb{1}(T_i = t)Y_i(t) \\mid \\mathbf{X_i = x}] \\overset{(A1)}{=} e\\mu\\) and \\(\\mathbb{E}[\\mathbb{1}(T_i = t) \\mid \\mathbf{X_i = x}] = e\\)."
+  },
+  {
+    "objectID": "slides/05_dml.html#dml-aipw-score-function-3",
+    "href": "slides/05_dml.html#dml-aipw-score-function-3",
+    "title": "(5) Double Machine Learning",
+    "section": "DML-AIPW Score Function (3)",
+    "text": "DML-AIPW Score Function (3)\n\n\nTake the derivative with respect to \\(r\\):\n\n\n\\[\n\\begin{align*}\n\\frac{\\partial}{\\partial r} &\\mathbb{E}[\\psi(Y_i, T_i, \\mu + r(\\tilde{\\mu} - \\mu), e + r(\\tilde{e} - e)) \\mid X_i = x] \\\\\n&= (\\tilde{\\mu} - \\mu) - \\frac{e\\mu(\\tilde{e} - e)}{(e + r(\\tilde{e} - e))^2} - \\frac{e(\\tilde{\\mu} - \\mu)(e+r(\\tilde{e} - e)) - e(\\mu + r(\\tilde{\\mu} - \\mu))(\\tilde{e} - e)}{(e + r(\\tilde{e} - e))^2}\n\\end{align*}\n\\]\n\n\nEvaluate at the true nuisance values, i.e. set \\(r = 0\\):\n\n\n\\[\n\\begin{align*}\n\\frac{\\partial}{\\partial r} &\\mathbb{E}[\\psi(Y_i, T_i, \\mu + r(\\tilde{\\mu} - \\mu), e + r(\\tilde{e} - e)) \\mid X_i = x] |_{r=0} \\\\\n&= (\\tilde{\\mu} - \\mu) - \\frac{e\\mu(\\tilde{e} - e)}{(e + 0(\\tilde{e} - e))^2} - \\frac{e(\\tilde{\\mu} - \\mu)(e+r(\\tilde{e} - e)) - e(\\mu + 0(\\tilde{\\mu} - \\mu))(\\tilde{e} - e)}{(e + 0(\\tilde{e} - e))^2} \\\\\n&= (\\tilde{\\mu} - \\mu) - \\frac{e\\mu(\\tilde{e} - e)}{e^2} - \\frac{e(\\tilde{\\mu} - \\mu)e - e\\mu(\\tilde{e} - e)}{e^2} \\\\\n&= (\\tilde{\\mu} - \\mu) - \\frac{e\\mu(\\tilde{e} - e)}{e^2} - \\frac{e^2}{e^2}(\\tilde{\\mu} - \\mu) + \\frac{e\\mu(\\tilde{e} - e)}{e^2}\\\\\n&= 0\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/05_dml.html#dml-aipw-example",
+    "href": "slides/05_dml.html#dml-aipw-example",
+    "title": "(5) Double Machine Learning",
+    "section": "DML-AIPW: Example",
+    "text": "DML-AIPW: Example\n\nAssess the effect of 401(k) program participation on net financial assets of 9,915 households in the US in 1991.\n\n\n# Load required packages\nlibrary(DoubleML)\nlibrary(mlr3)\nlibrary(mlr3learners)\nlibrary(data.table)\n\n# suppress messages during fitting\nlgr::get_logger(\"mlr3\")$set_threshold(\"warn\")\n\n# load data as a data.table\ndata = fetch_401k(return_type = \"data.table\", instrument = TRUE)\n\n# Set up basic model: Specify variables for data-backend\nfeatures_base = c(\"age\", \"inc\", \"educ\", \"fsize\",\"marr\", \"twoearn\", \"db\", \"pira\", \"hown\")\n\n# Initialize DoubleMLData (data-backend of DoubleML)\ndata_dml_base = DoubleMLData$new(data,\n                                 y_col = \"net_tfa\", # outcome variable\n                                 d_cols = \"e401\", # treatment variable\n                                 x_cols = features_base) # covariates\n\n# Initialize Random Forrest Learner\nrandomForest = lrn(\"regr.ranger\")\nrandomForest_class = lrn(\"classif.ranger\")\n\n# Random Forest\nset.seed(123)\ndml_irm_forest = DoubleMLIRM$new(data_dml_base,\n                                 ml_g = randomForest,\n                                 ml_m = randomForest_class,\n                                 score = \"ATE\",\n                                 trimming_threshold = 0.01,\n                                 apply_cross_fitting = TRUE,\n                                 n_folds = 5)\n\n# Set nuisance-part specific parameters\ndml_irm_forest$set_ml_nuisance_params(\n    \"ml_g0\", \"e401\", list(max.depth = 6, mtry = 4, min.node.size = 7)) # learner for outcome 0\ndml_irm_forest$set_ml_nuisance_params(\n    \"ml_g1\", \"e401\", list(max.depth = 6, mtry = 3, min.node.size = 5)) # learner for outcome 1\ndml_irm_forest$set_ml_nuisance_params( \n    \"ml_m\", \"e401\", list(max.depth = 6, mtry = 3, min.node.size = 6)) # learner for treatment\n\ndml_irm_forest$fit()\ndml_irm_forest$summary()\n\nEstimates and significance testing of the effect of target variables\n     Estimate. Std. Error t value Pr(&gt;|t|)    \ne401      8206       1106   7.421 1.16e-13 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1"
+  },
+  {
+    "objectID": "slides/05_dml.html#definitions",
+    "href": "slides/05_dml.html#definitions",
+    "title": "(5) Double Machine Learning",
+    "section": "Definitions",
+    "text": "Definitions\n\nData and parameters;\n\n\\(W\\) is a set of observed variables; e.g., \\(W = \\{Y, T, X\\}\\).\n\\(\\theta\\) is the target parameter.\n\\(\\eta\\) is a set of nuisance parameters; e.g., \\(\\eta = \\{\\mu(X), e(X)\\}\\).\n\n\n\n\nScore functions \\(\\psi(W, \\tilde{\\theta}, \\tilde{\\eta})\\) must satisfy two properties in Double ML:\n\n\\(\\mathbb{E}[\\psi(W, \\theta, \\eta)] = 0\\): i.e. moment condition with expectation zero if evaluated at true parameters.\n\\(\\partial_r\\mathbb{E}[\\psi(W, \\theta, \\eta + r(\\hat{\\eta} - \\eta))]|_{r=0} = 0\\): i.e. Neyman-orthogonality."
+  },
+  {
+    "objectID": "slides/05_dml.html#examples",
+    "href": "slides/05_dml.html#examples",
+    "title": "(5) Double Machine Learning",
+    "section": "Examples",
+    "text": "Examples\n\nMoment condition of the residual-on-residual regression:\n\n\\(\\mathbb{E} \\left[ (Y - \\mu(X) - \\tau (T - e(X))) (T - e(X)) \\right] = 0\\)\n\\(W = (T, X, Y), \\quad \\theta = \\tau, \\quad \\eta = (\\mu(X), e(X))\\)\nwith \\(\\mu(X) := \\mathbb{E}[Y \\mid X]\\) and \\(e(X) := \\mathbb{E}[T \\mid X]\\)\n\n\n\n\nMoment condition of the AIPW-ATE:\n\n\\(\\mathbb{E} \\left[ \\mu(1, X) - \\mu(0, X) + \\frac{T(Y - \\mu(1,X))}{e(X)} - \\frac{(1 - T)(Y - \\mu(0, X))}{1 - e(X)} - \\tau_{ATE} \\right] = 0\\)\n\\(W = (T, X, Y), \\quad \\theta = \\tau_{\\text{ATE}}, \\quad \\eta = (\\mu(1, X), \\mu(0, X), e(X))\\)\nwith \\(\\mu(t,X) := \\mathbb{E}[Y \\mid T = t, X]\\) and \\(e(X) := \\mathbb{E}[T=1 \\mid X]\\)"
+  },
+  {
+    "objectID": "slides/05_dml.html#linear-score-functions",
+    "href": "slides/05_dml.html#linear-score-functions",
+    "title": "(5) Double Machine Learning",
+    "section": "Linear Score Functions",
+    "text": "Linear Score Functions\n\nWe will focus on linear score functions that can be represented as follows:\n\n\\(\\psi(W, \\tilde{\\theta}, \\tilde{\\eta}) = \\tilde{\\theta}\\psi_a(W, \\tilde{\\eta}) + \\psi_b(W, \\tilde{\\eta})\\)\n\nsuch that the moment condition can be written as:\n\n\\(\\mathbb{E}[\\psi(W, \\theta, \\eta)] = \\theta \\mathbb{E}[\\psi_a(W, \\eta)] +  \\mathbb{E}[\\psi_b(W, \\eta)] = 0\\)\n\nand the solution is:\n\n\\(\\theta = - \\frac{\\mathbb{E}[\\psi_b(W, \\eta)]}{\\mathbb{E}[\\psi_a(W, \\eta)]}\\)"
+  },
+  {
+    "objectID": "slides/05_dml.html#example-residual-on-residual-regression",
+    "href": "slides/05_dml.html#example-residual-on-residual-regression",
+    "title": "(5) Double Machine Learning",
+    "section": "Example Residual-on-residual Regression",
+    "text": "Example Residual-on-residual Regression\n\nMoment condition:\n\n\\[\n\\begin{align*}\n\\mathbb{E} \\left[ (Y - \\mu(X) - \\tau(T - e(X)))(T - e(X)) \\right] &= 0 \\\\\n\\mathbb{E} \\left[ (Y - \\mu(X))(T - e(X)) - \\tau(T - e(X))(T - e(X)) \\right] &= 0 \\\\\n\\tau \\mathbb{E} [ \\underbrace{-1(T - e(X))^2}_{\\psi_a} ] + \\mathbb{E} [ \\underbrace{(Y - \\mu(X))(T - e(X))}_{\\psi_b} ] &= 0 \\\\\n\\Rightarrow \\tau = - \\frac{\\mathbb{E}[\\psi_b(W; \\eta)]}{\\mathbb{E}[\\psi_a(W; \\eta)]} = \\frac{\\mathbb{E}[(Y - \\mu(X))(T - e(X))]}{\\mathbb{E}[(T - e(X))^2]}\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/05_dml.html#example-aipw-ate",
+    "href": "slides/05_dml.html#example-aipw-ate",
+    "title": "(5) Double Machine Learning",
+    "section": "Example AIPW-ATE",
+    "text": "Example AIPW-ATE\n\nMoment condition:\n\n\\[\n\\begin{align*}\n\\mathbb{E} \\left[ \\mu(1, X) - \\mu(0, X) + \\frac{T(Y - \\mu(1, X))}{e(X)} - \\frac{(1 - T)(Y - \\mu(0, X))}{1 - e(X)} - \\tau_{\\text{ATE}} \\right] &= 0 \\\\\n\\tau_{\\text{ATE}} \\underbrace{(-1)}_{\\psi_a} + \\mathbb{E} \\bigg[ \\underbrace{\\mu(1, X) - \\mu(0, X) + \\frac{T(Y - \\mu(1, X))}{e(X)} - \\frac{(1 - T)(Y - \\mu(0, X))}{1 - e(X)}}_{\\psi_b} \\bigg] &= 0 \\\\\n\\Rightarrow \\tau_{\\text{ATE}} = -\\frac{\\mathbb{E}[\\psi_b(W; \\eta)]}{\\mathbb{E}[\\psi_a(W; \\eta)]} = \\mathbb{E} \\left[ \\mu(1, X) - \\mu(0, X) + \\frac{T(Y - \\mu(1, X))}{e(X)} - \\frac{(1 - T)(Y - \\mu(0, X))}{1 - e(X)} \\right]\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/05_dml.html#double-ml-recipe",
+    "href": "slides/05_dml.html#double-ml-recipe",
+    "title": "(5) Double Machine Learning",
+    "section": "Double ML Recipe",
+    "text": "Double ML Recipe\n\nFind Neyman-orthogonal score for your target parameter:\n\ncan be constructed (see Chernozhukov et al. (2018), Section 2)\n\nPredict nuisance parameters \\(\\hat{\\eta}\\) with cross-fitted high-quality ML.\nSolve empirical moment condition to estimate the target parameter:\n\n\\(\\theta = - \\frac{\\mathbb{E}[\\psi_b(W, \\eta)]}{\\mathbb{E}[\\psi_a(W, \\eta)]}\\)\n\nCalculate standard error:\n\n\\(\\hat{\\sigma}^2 = \\frac{N^{-1} \\sum_{i} \\psi(W_i; \\hat{\\theta}, \\hat{\\eta}_i)^2}{[N^{-1} \\sum_{i} \\psi_a(W_i; \\hat{\\eta}_i)]^2} \\quad \\Rightarrow \\quad \\text{se}(\\hat{\\theta}) = \\sqrt{\\frac{\\hat{\\sigma}^2}{N}}\\)\nTo calculate t-values, confidence intervals, etc.\nCan be motivated by the concept of influence functions."
+  },
+  {
+    "objectID": "slides/05_dml.html#standard-errors-in-dml",
+    "href": "slides/05_dml.html#standard-errors-in-dml",
+    "title": "(5) Double Machine Learning",
+    "section": "Standard Errors in DML",
+    "text": "Standard Errors in DML\n\nInfluence functions:\n\n\\(\\Psi(W; \\theta, \\eta) := - \\mathbb{E} \\left[ \\frac{\\partial \\psi}{\\partial \\theta} \\right]^{-1} \\psi(W; \\theta, \\eta) = - \\mathbb{E}[\\psi_a(W; \\eta)]^{-1} \\psi(W; \\theta, \\eta)\\)\nScaled version of the score with important characteristics:\n\n\\(\\Psi(W_i; \\theta, \\eta_i)\\) measures the influence of an estimator \\(\\theta\\) to infinitesimal changes in the distribution, i.e. of each observation \\(W_i\\)\n\\(\\mathbb{E}[\\Psi(W; \\theta, \\eta)] = \\mathbb{E}[ -\\mathbb{E}[\\psi_a(W; \\eta)]^{-1} \\psi(W; \\theta, \\eta)] = -\\mathbb{E}[\\psi_a(W; \\eta)]^{-1}  \\underbrace{\\mathbb{E}[\\psi(W; \\theta, \\eta)]}_{=0} = 0\\)\n\n\n\n\n\nEstimator distribution and influence function are closely linked:\n\n\\(\\sqrt{N}(\\hat{\\theta} - \\theta) = \\frac{1}{\\sqrt{N}} \\sum_{i} \\psi(W_i; \\theta, \\eta_i) + o_p(1) \\xrightarrow{d} N(0, \\underbrace{\\operatorname{Var}[\\psi(W; \\theta, \\eta)]}_{\\sigma^2})\\)\n\nEstimator variance (suppressing arguments for brevity):\n\n\\(\\sigma^2 = \\text{Var}[\\psi] = \\mathbb{E}[\\psi^2] - \\underbrace{\\mathbb{E}[\\psi]^2}_{=0} = \\mathbb{E}[\\psi^2] = \\mathbb{E}[(\\mathbb{E}[\\psi_a]^{-1} \\psi)^2] = \\mathbb{E}[\\psi_a]^{-2} \\mathbb{E}[\\psi^2] = \\frac{\\mathbb{E}[\\psi^2]}{\\mathbb{E}[\\psi_a]^2}\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#randomizing",
+    "href": "slides/03_exper.html#randomizing",
+    "title": "(3) Randomized Experiments",
+    "section": "Randomizing",
+    "text": "Randomizing\n\n\nRandomized treatment assignment:\n\n\\(P(T_i = t) = \\frac{1}{k}\\) where \\(k\\) is the number of treatment groups / values\n\n\n\n\n\nDefinition 3.1: “Covariate Balance”\n\n\nWe have covariate balance if the distribution of covariates \\(\\mathbf{X}\\) is the same across treatment groups.\nFormally:\n\\(P(\\mathbf{X} | T = t) \\stackrel{d}{=} P(\\mathbf{X} | T = t')\\) for all \\(t, t'\\).\n\\(\\mathbf{X} \\perp\\!\\!\\!\\perp T\\).\n\n\n\n\n\nRandomization implies covariate balance, across all covariates, even unobserved ones."
+  },
+  {
+    "objectID": "slides/03_exper.html#randomizing-association-becomes-causation",
+    "href": "slides/03_exper.html#randomizing-association-becomes-causation",
+    "title": "(3) Randomized Experiments",
+    "section": "Randomizing: “Association becomes Causation”",
+    "text": "Randomizing: “Association becomes Causation”\n\n\nPerspective 1a: \"Graphical Models: Backdoor Adjustment\"\n\nLet \\(\\mathbf{X}\\) be a sufficient adjustment including all (un-) observed confounders, hence:\n\n\\(P(Y | do(T = t)) = \\sum_x P(Y | T = t, \\mathbf{X} = \\mathbf{x})P(\\mathbf{X})\\)\n\nBy multiplying by \\(\\frac{P(T = t | \\mathbf{X} = \\mathbf{x})}{P(T = t | \\mathbf{X} = \\mathbf{x})}\\), we get the joint distribution in the numerator:\n\n\\(P(Y | do(T = t)) = \\sum_x \\frac{P(Y | T= t, \\mathbf{X} = \\mathbf{x})P(T = t | \\mathbf{X} = \\mathbf{x})P(x)}{P(T = t | \\mathbf{X} = \\mathbf{x})} = \\sum_x \\frac{P(Y, T, \\mathbf{X})}{P(T = t | \\mathbf{X} = \\mathbf{x})}\\)\n\nNow, we use the important result from randomization that \\(\\mathbf{X} \\perp\\!\\!\\!\\perp T\\):\n\n\\(P(Y | do(T = t)) = \\sum_x \\frac{P(Y, T, \\mathbf{X})}{P(T)}\\)\n\nBy definition of conditional probabilities and marginalization we obtain q.e.d.:\n\n\\(P(Y | do(T = t)) = \\sum_x P(Y, \\mathbf{X} | T = t) = P(Y | T = t)\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#randomizing-association-becomes-causation-1",
+    "href": "slides/03_exper.html#randomizing-association-becomes-causation-1",
+    "title": "(3) Randomized Experiments",
+    "section": "Randomizing: “Association becomes Causation”",
+    "text": "Randomizing: “Association becomes Causation”\n\n\nPerspective 1b: \"Graphical Models: do-Operator\"\n\nall backdoor paths are blocked\ni.e. backdoor adjustment on empty set \\(\\emptyset\\) suffices\n\\(P(Y | \\text{do}(T = t)) = P(Y | T = t)\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#randomizing-association-becomes-causation-2",
+    "href": "slides/03_exper.html#randomizing-association-becomes-causation-2",
+    "title": "(3) Randomized Experiments",
+    "section": "Randomizing: “Association becomes Causation”",
+    "text": "Randomizing: “Association becomes Causation”\n\n\nPerspective 2: \"Potential Outcomes\" (Review & Extension)\"\n\nCausation:\n\n\\(ATE_{cs} = \\mathbb{E}[Y_i(1) - Y_i(0)]\\)\n\nExtend by probability \\(p\\) of being in a subgroup:\n\n\\(ATE_{cs} = p\\underbrace{(\\mathbb{E}[Y_i(1) - Y_i(0)|T_i=1])}_{\\text{ATT}} + (1-p)\\underbrace{(\\mathbb{E}[Y_i(1) - Y_i(0)|T_i=0])}_{\\text{ATU}}\\)\n\\(ATE_{cs} = p\\mathbb{E}[Y_i(1)|T_i=1] - p\\mathbb{E}Y_i(0)|T_i=1] + (1-p)\\mathbb{E}[Y_i(1)|T_i=0] - (1-p)\\mathbb{E}Y_i(0)|T_i=0]\\)\n\\(ATE_{cs} = p\\mu_{11} - p\\mu_{01} + (1-p)\\mu_{10} - (1-p)\\mu_{00}\\)\n\nAssociation:\n\n\\(ATE_{as} = \\mathbb{E}[Y_i|T_i=1] - \\mathbb{E}[Y_i|T_i=0] = \\mathbb{E}[Y_i(1)|T_i=1] - \\mathbb{E}[Y_i(0)|T_i=0] = \\mu_{11} - \\mu_{00}\\)\n\nAdd & subtract ATE:\n\n\\(ATE_{as} = \\color{#00C1D4}{ATE} + \\mu_{11} - \\mu_{00} - \\color{#00C1D4}{p\\mu_{11} + p\\mu_{01} - (1-p)\\mu_{10} + (1-p)\\mu_{00}}\\)\n\nAdd & subtract \\((1-p)\\mu_{01}\\):\n\n\\(ATE_{as} = ATE + \\mu_{11} - \\mu_{00} - p\\mu_{11} + \\underbrace{p\\mu_{01} \\color{#00C1D4}{+ (1-p)\\mu_{01}}}_{=\\mu_{01}} - (1-p)\\mu_{10} + (1-p)\\mu_{00} \\color{#00C1D4}{- (1-p)\\mu_{01}}\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#randomizing-association-becomes-causation-3",
+    "href": "slides/03_exper.html#randomizing-association-becomes-causation-3",
+    "title": "(3) Randomized Experiments",
+    "section": "Randomizing: “Association becomes Causation”",
+    "text": "Randomizing: “Association becomes Causation”\n\n\nPerspective 2: \"Potential Outcomes\" (Review & Extension)\"\n\nRearrange:\n\n\\(ATE_{as} = ATE + \\mu_{01} - \\mu_{00} +  \\underbrace{\\mu_{11} - p\\mu_{11}}_{=(1-p)\\mu_{11}} - (1-p)\\mu_{10} + (1-p)\\mu_{00} - (1-p)\\mu_{01}\\)\n\\(ATE_{as} = ATE + \\mu_{01} - \\mu_{00} +  (1-p)[\\underbrace{\\mu_{11} - \\mu_{01}}_{\\text{ATT}} - \\underbrace{(\\mu_{10} - \\mu_{00})}_{\\text{ATU}}]\\)\n\nTherefore:\n\n\n\n\n\\[\n\\begin{align}\nATE_{as} &= \\underbrace{\\mathbb{E}[Y_i(1) - Y_i(0)]}_{ATE_{cs}} \\\\ &+ \\underbrace{\\mathbb{E}[Y_i(0)|T_i=1] - \\mathbb{E}Y_i(0)|T_i=0]}_{\\text{Confounding Bias}} \\\\ &+ \\underbrace{(1-\\mathbb{E}[T_i])[\\underbrace{\\mathbb{E}[Y_i(1)|T_i=1] - \\mathbb{E}[Y_i(0)|T_i=1]}_{\\text{ATT}} - \\underbrace{(\\mathbb{E}[Y_i(1)|T_i=0] - \\mathbb{E}[Y_i(0)|T_i=0])}_{\\text{ATU}}]}_{\\text{Heterogeneity Bias}}\n\\end{align}\n\\]"
+  },
+  {
+    "objectID": "slides/03_exper.html#randomizing-association-becomes-causation-4",
+    "href": "slides/03_exper.html#randomizing-association-becomes-causation-4",
+    "title": "(3) Randomized Experiments",
+    "section": "Randomizing: “Association becomes Causation”",
+    "text": "Randomizing: “Association becomes Causation”\n\n\nPerspective 2: \"Potential Outcomes - Exchangeability\" implies \\(\\{Y(1), Y(0)\\} \\perp\\!\\!\\!\\perp T\\).\n\nExchangeability before treatment: \\(\\color{#00C1D4}{\\mathbb{E}[Y_i(0)|T_i=0] = \\mathbb{E}[Y_i(0)|T_i=1] = \\mathbb{E}[Y_i(0)]}\\)\nExchangeability after treatment: \\(\\color{#FF7E15}{\\mathbb{E}[Y_i(1)|T_i=1] = \\mathbb{E}[Y_i(1)|T_i=0] = \\mathbb{E}[Y_i(1)]}\\)\n\n\n\n\n\\[\n\\begin{align}\nATE_{as} &= \\underbrace{\\mathbb{E}[Y_i(1) - Y_i(0)]}_{ATE_{cs}} \\\\ &+ \\underbrace{\\mathbb{E}[Y_i(0)|T_i=1] - \\mathbb{E}Y_i(0)|T_i=0]}_{\\color{#00C1D4}{\\text{Confounding Bias = 0}}} \\\\ &+ \\underbrace{(1-\\mathbb{E}[T_i])[\\underbrace{\\mathbb{E}[Y_i(1)|T_i=1] - \\mathbb{E}[Y_i(0)|T_i=1]}_{\\text{ATT}} - \\underbrace{(\\mathbb{E}[Y_i(1)|T_i=0] - \\mathbb{E}[Y_i(0)|T_i=0])}_{\\text{ATU}}]}_{\\color{#FF7E15}{\\text{Heterogeneity Bias = 0}}}\n\\end{align}\n\\]"
+  },
+  {
+    "objectID": "slides/03_exper.html#identification-of-ate-in-experiments",
+    "href": "slides/03_exper.html#identification-of-ate-in-experiments",
+    "title": "(3) Randomized Experiments",
+    "section": "Identification of ATE in Experiments",
+    "text": "Identification of ATE in Experiments\n\nIdentification:\n\nexpressing the inherently unobservable ATE in terms of observable quantities.\nremove confounding and heterogeneity bias by randomization or addional assumptions.  \n\n\n\n\nUsing randomization of \\(T\\), the mean comparison identifies the ATE:\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}[Y_i(1) - Y_i(0)] = \\mathbb{E}[Y_i|T_i=1] - \\mathbb{E}[Y_i|T_i=0]\\)\n\n\n\n\n\nMean comparison in a sample (rather than the population) is given by:\n\n\\(\\hat{\\tau}_{\\text{ATE}} = \\frac{1}{\\sum_i T_i} \\sum_i T_i Y_i - \\frac{1}{\\sum_i (1 - T_i)} \\sum_i (1 - T_i) Y_i\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#identification-of-ate-in-experiments-example",
+    "href": "slides/03_exper.html#identification-of-ate-in-experiments-example",
+    "title": "(3) Randomized Experiments",
+    "section": "Identification of ATE in Experiments: Example",
+    "text": "Identification of ATE in Experiments: Example\n\nExperiment conducted between November 1994 and February 1996:\n\nRandomized access to Job Corps: education program financed by the U.S. Department of Labor that targets disadvantaged individuals aged 16 to 24.\n\n\n\nSource: Schochet, Burghardt, and Glazerman (2001); Schochet, Burghardt, and McConnell (2008).\n\n\nAssess the ATE of the program on the weekly earnings in the fourth year after the assignment among 9.240 individuals.\n\n\nlibrary(causalweight)             # load causalweight package that inclkudes the data\ndata(JC)                          # load JC data\nT=JC$assignment                   # define treatment (assignment to JC)\nY=JC$earny4                       # define outcome (earnings in fourth year)\nmean((Y[T==0]))                   # compute mean earnings in control group\n\n[1] 197.9258\n\nmean(Y[T==1])-mean(Y[T==0])       # compute the ATE \n\n[1] 16.05513"
+  },
+  {
+    "objectID": "slides/03_exper.html#identification-of-cate-in-experiments",
+    "href": "slides/03_exper.html#identification-of-cate-in-experiments",
+    "title": "(3) Randomized Experiments",
+    "section": "Identification of CATE in Experiments",
+    "text": "Identification of CATE in Experiments\n\nAlso conditional independence holds in a properly randomized experiment:\n\n\\(\\{Y(1), Y(0)\\} \\perp\\!\\!\\!\\perp T | X\\)  \n\nHence, the Conditional Average Treatment Effect (CATE) is also identified:\n\n\\(\\tau_{\\text{CATE}}(x) = \\mathbb{E}[Y_i(1) - Y_i(0)|X_i=x] = \\mathbb{E}[Y_i|T_i=1, X_i=x] - \\mathbb{E}[Y_i|T_i=0, X_i=x]\\)\n\n\n\n\nNote that we condition on variables that are not affected by the treatment (e.g., pre-treatment covariates \\(X\\))\n\nThis is implied by writing \\(X\\) and not \\(X(T)\\).\n\nWe will learn about estimators of CATEs in an own session on Effect Heterogeneity."
+  },
+  {
+    "objectID": "slides/03_exper.html#effect-identification-by-linear-regression",
+    "href": "slides/03_exper.html#effect-identification-by-linear-regression",
+    "title": "(3) Randomized Experiments",
+    "section": "Effect Identification by Linear Regression",
+    "text": "Effect Identification by Linear Regression\n\nATE as mean comparison can also be expressed as a linear regression problem:\nStart with the observed outcome for each i:\n\n\\(Y_i = Y_i(1) * T_i + Y_i(0) * (1 - T_i)\\)\n\\(Y_i = Y_i(0) + (Y_i(1) - Y_i(0)) * T_i\\)\n\n\n\n\nTake the conditional expectation of this expression given T in the population:\n\n\\(\\mathbb{E}[Y_i|T_i] = \\mathbb{E}[Y_i(0) + (Y_i(1) - Y_i(0)) * T_i]\\)\n\\(\\mathbb{E}[Y_i|T_i] = \\mathbb{E}[Y_i(0)|T_i] + ( \\mathbb{E}[Y_i(1)|T_i] - \\mathbb{E}[Y_i(0)|T_i] ) * T_i\\)\n\n\n\n\n\nWith ignorability/ exchangeability we obtain:\n\n\\(\\mathbb{E}[Y_i|T_i] = \\underbrace{\\mathbb{E}[Y_i|T_i = 0]}_{\\beta_0} + \\underbrace{( \\mathbb{E}[Y_i|T_i = 1] - \\mathbb{E}[Y_i|T_i = 0] )}_{\\beta_1} * T_i\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#effect-identification-by-linear-regression-1",
+    "href": "slides/03_exper.html#effect-identification-by-linear-regression-1",
+    "title": "(3) Randomized Experiments",
+    "section": "Effect Identification by Linear Regression",
+    "text": "Effect Identification by Linear Regression\n\n\\(\\epsilon\\) is commonly referred to as error term or residual and formally defined as follows:\n\n\\(\\epsilon_i = Y_i - \\underbrace{(\\beta_0 + \\beta_1 * T_i)}_{\\mathbb{E}[Y_i|T_i]}\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#estimation-by-linear-regression",
+    "href": "slides/03_exper.html#estimation-by-linear-regression",
+    "title": "(3) Randomized Experiments",
+    "section": "Estimation By Linear Regression",
+    "text": "Estimation By Linear Regression\n\nWe obtain the ATE based on linear regression by minimizing the sum of squared residuals in the sample:\n\n\\(\\hat{\\beta_0}, \\hat{\\beta_1} = \\arg \\min_{\\beta_0^*, \\beta_1^*} \\sum_{i=1}^{n} \\underbrace{(Y_i - \\beta_0^* - \\beta_1^* T_i)^2}_{\\epsilon_i}\\)\n\n\n\n\nSolving this minimization problem yields the following parameter estimates:\n\n\\(\\hat{\\beta_1} = \\frac{\\text{Cov}(Y_i, T_i)}{\\text{Var}(T_i)}, \\text{ where}\\)\n\\(\\text{Cov}(Y_i, T_i) = \\frac{1}{n - 1} \\sum_{i=1}^{n} \\left(Y_i - \\frac{1}{n}\\sum_{i=1}^{n}Y_i\\right)\\left(T_i - \\frac{1}{n}\\sum_{i=1}^{n}T_i\\right), \\text{and}\\)\n\\(\\text{Var}(T_i) = \\frac{1}{n - 1} \\sum_{i=1}^{n} \\left(T_i - \\frac{1}{n}\\sum_{i=1}^{n}T_i\\right)^2\\)\n\\(\\hat{\\beta_0} = -\\frac{1}{n}\\sum_{i=1}^{n} Y_i - \\hat{\\beta_1}\\frac{1}{n}\\sum_{i=1}^{n} T_i\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#properties-of-regression-estimates",
+    "href": "slides/03_exper.html#properties-of-regression-estimates",
+    "title": "(3) Randomized Experiments",
+    "section": "Properties of Regression Estimates",
+    "text": "Properties of Regression Estimates\n\nUnbiased: on average, equal to the true parameter values across different samples:\n\n\\(\\mathbb{E}[\\hat{\\beta_1}] = \\beta_1, \\text{ and}\\)\n\\(\\mathbb{E}[\\hat{\\beta_0}] = \\beta_0\\)\n\nConsistent: converges in probability to the true parameter values as sample size increases:\n\n\\(\\hat{\\beta_1} \\xrightarrow{p} \\beta_1, \\text{ and}\\)\n\\(\\hat{\\beta_0} \\xrightarrow{p} \\beta_0\\)\n\nAsymptotically normally distributed: follows a normal distribution across suffciently large samples:\n\n\\(\\sqrt{n}(\\hat{\\beta_1} - \\beta_1) \\xrightarrow{d} \\mathcal{N}(0, \\sigma^2_{\\beta_1}), \\text{ and}\\)\n\\(\\sqrt{n}(\\hat{\\beta_0} - \\beta_0) \\xrightarrow{d} \\mathcal{N}(0, \\sigma^2_{\\beta_0})\\)\n\n\n\n\nNote: We skip the proofs here. They can be found in any introductory econometrics textbook such as Wooldridge (2010): Econometric Analysis of Cross Section and Panel Data (MIT Press) ."
+  },
+  {
+    "objectID": "slides/03_exper.html#inference-goals",
+    "href": "slides/03_exper.html#inference-goals",
+    "title": "(3) Randomized Experiments",
+    "section": "Inference Goals",
+    "text": "Inference Goals\n\nQuantifying the precision or uncertainty of the parameter estimates:\n\nWith which error probability can we rule out that the ATE is equal to zero (or some other value we are interested in) in the population, given the ATE estimate in our sample?\nWhat is the range or interval of values that likely includes the ATE in the population, given the finndings in our sample?\nStandard errors (SE): measure the variability of the estimated ATE across different samples\nHypothesis tests: assess whether the estimated ATE is statistically different from zero\nConfidence intervals (CI): provide a range of plausible values for the true ATE"
+  },
+  {
+    "objectID": "slides/03_exper.html#standard-errors",
+    "href": "slides/03_exper.html#standard-errors",
+    "title": "(3) Randomized Experiments",
+    "section": "Standard Errors",
+    "text": "Standard Errors\n\nAsymptotic variance of the ATE unknown as it relies on population parameters:\n\n\\(\\text{Var}(\\hat{\\beta_1}) = \\frac{\\mathbb{E}[\\epsilon^2 \\cdot (T_i - \\mathbb{E}[T_i])^2]}{n \\cdot (\\text{Var}(T_i))^2}\\)\n\nStart with a variance estimator of ATE in the sample:\n\n\\(\\widehat{\\text{Var}}(\\hat{\\beta_1}) = \\frac{\\frac{1}{n} \\sum_{i=1}^{n} \\hat{\\epsilon}_i^2 \\cdot \\left( T_i - \\frac{1}{n} \\sum_{i=1}^{n} T_i \\right)^2}{n \\cdot \\left( \\widehat{\\text{Var}}(T_i) \\right)^2}\\) with \\(\\hat{\\epsilon}_i = Y_i - \\hat{\\beta_0} - \\hat{\\beta_1} T_i\\)\n\nStandard error of the ATE estimate:\n\n\\(se(\\hat{\\beta_1}) = \\sqrt{\\widehat{\\text{Var}}(\\hat{\\beta_1})}\\)\n\nObtain the standard normal vs t distribution:\n\n\\(z_1 = \\frac{\\hat{\\beta_1} - \\beta_1}{sd(\\hat{\\beta_1})} \\xrightarrow{d} \\mathcal{N}(0, 1)\\) vs \\(t_1 = \\frac{\\hat{\\beta_1} - \\beta_1}{se(\\hat{\\beta_1})} \\sim t_{n-2}\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#t-distribution",
+    "href": "slides/03_exper.html#t-distribution",
+    "title": "(3) Randomized Experiments",
+    "section": "t-Distribution",
+    "text": "t-Distribution\n\nThe t-distribution is a family of distributions indexed by the degrees of freedom (df):\n\n\\(t_{df} = \\frac{Z}{\\sqrt{V/df}}\\), where \\(Z \\sim \\mathcal{N}(0, 1)\\) and \\(V \\sim \\chi^2(df)\\)\n\nHow likely is a specific t-value computed from a sample if the true ATE in the population is zero?"
+  },
+  {
+    "objectID": "slides/03_exper.html#hypothesis-testing",
+    "href": "slides/03_exper.html#hypothesis-testing",
+    "title": "(3) Randomized Experiments",
+    "section": "Hypothesis Testing",
+    "text": "Hypothesis Testing\n\nStep 1: Define the null hypothesis \\(H_0\\) and alternative hypothesis \\(H_1\\): \n\nTwo-sided, undirected test:\n\n\\(H_0\\): \\(\\beta_1 = 0\\) and \\(H_1\\): \\(\\beta_1 \\neq 0\\)\n\nOne-sided, directed test:\n\n\\(H_0\\): \\(\\beta_1 \\leq 0\\) and \\(H_1\\): \\(\\beta_1 &gt; 0\\)\n\\(H_0\\): \\(\\beta_1 \\geq 0\\) and \\(H_1\\): \\(\\beta_1 &lt; 0\\)\n\n\n\n\n\nStep 2: Set the significance level \\(\\alpha\\):\n\nmaximally accepted type I error probability of incorrectly rejecting H0 and accepting H1\n\\(\\alpha = 0.05\\) implies that the error probability must not exceed 5%\nother conventional levels of significance are 0.01 (1%) or 0.1 (10%)"
+  },
+  {
+    "objectID": "slides/03_exper.html#hypothesis-testing-1",
+    "href": "slides/03_exper.html#hypothesis-testing-1",
+    "title": "(3) Randomized Experiments",
+    "section": "Hypothesis Testing",
+    "text": "Hypothesis Testing\n\nStep 3: Compute the critical value \\(c\\):\n\nQuantile in the t-distribution that corresponds to \\(\\alpha\\), given \\(H_0\\) is true\nTwo-sided, undirected test and \\(\\alpha = 0.05\\): \\(c = t_{\\alpha/2 = 0.025, 1000-2} = 1.96\\)\nOne-sided, directed test and \\(\\alpha = 0.05\\): \\(c = t_{\\alpha = 0.05, 1000-2} = 1.65\\)\n\n\n\n\nStep 4: Compute the t-statistic and p-value:\n\nTest statistic: \\(t_1 = \\frac{\\hat{\\beta_1} - 0}{se(\\hat{\\beta_1})}\\)\np-value: probability of observing a test statistic as extreme as \\(t_1\\) under the null hypothesis\n\nTwo-sided, undirected test: \\(p = Pr(|A| \\geq |t_1|)\\)\nOne-sided, directed test: \\(p = Pr(A \\geq t_1)\\) or \\(p = Pr(A \\leq t_1)\\)\n\nIn a two-sided, undirected test, verify that:\n\n\\(|t_1| &gt; c\\); \\(p &lt; \\alpha/2\\)\n\nIn a one-sided, directed test, verify that:\n\n\\(t_1 &gt; c\\) or \\(t_1 &lt; -c\\); \\(p &lt; \\alpha\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#confidence-intervals",
+    "href": "slides/03_exper.html#confidence-intervals",
+    "title": "(3) Randomized Experiments",
+    "section": "Confidence Intervals",
+    "text": "Confidence Intervals\n\nRange of ATE values such that the true ATE \\(\\beta_1\\) is included with probability \\(1-\\alpha\\), based on the estimated ATE \\(\\hat{\\beta_1}\\) and the standard error \\(se(\\hat{\\beta_1})\\) obtained in the sample\nConstructed in such a way that in the (hypothetical) case that we could draw many samples and construct confidence intervals in all those samples, a share of \\(1-\\alpha\\) confidence intervals would include the true \\(\\beta_1\\) \nTwo-sided confidence interval:\n\n\\(CI = \\hat{\\beta_1} \\pm c \\cdot se(\\hat{\\beta_1})\\)\ne.g. \\(CI = 0.3 \\pm 1.96 \\cdot 0.05 = [0.202, 0.398]\\)\n\nOne-sided confidence interval:\n\n\\(CI = \\hat{\\beta_1} + c \\cdot se(\\hat{\\beta_1})\\)\ne.g. \\(CI = 0.3 - 1.65 \\cdot 0.05 = [0.2175, \\infty]\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#r-squared",
+    "href": "slides/03_exper.html#r-squared",
+    "title": "(3) Randomized Experiments",
+    "section": "R-squared",
+    "text": "R-squared\n\nIn general: percentage of variance in the outcome \\(Y\\) that is explained by all variables in the model:\n\n\\(R^2 = 1 - \\frac{SSR}{SST}\\)\n\\(SSR = \\sum_{i=1}^{n} (Y_i - \\hat{Y_i})^2\\)\n\\(SST = \\sum_{i=1}^{n} (Y_i - \\bar{Y})^2\\)\n\nSpecific case: just one binary treatment variable \\(T\\) in the model:\n\n\\(R^2 = r^2\\) where \\(r\\) is the correlation between \\(Y\\) and \\(T\\)\n\\(R^2 = \\left( \\frac{\\sum_{i=1}^{n} (Y_i - \\bar{Y})(T_i - \\bar{T})}{\\sqrt{\\sum_{i=1}^{n} (Y_i - \\bar{Y})^2} \\cdot \\sqrt{\\sum_{i=1}^{n}(T_i - \\bar{T})^2}} \\right)^2\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#ate-in-experiments-regression-example",
+    "href": "slides/03_exper.html#ate-in-experiments-regression-example",
+    "title": "(3) Randomized Experiments",
+    "section": "ATE in Experiments: Regression Example",
+    "text": "ATE in Experiments: Regression Example\n\nAssess the ATE of the program on the weekly earnings in the fourth year after the assignment among 9.240 individuals.\n\n\nlibrary(causalweight)             # load causalweight package \nlibrary(sandwich)                 # load sandwich package\nlibrary(modelsummary)             # load modelsummary package)\ndata(JC)                          # load JC data\nT=JC$assignment                   # define treatment (assignment to JC)\nY=JC$earny4                       # define outcome (earnings in fourth year)\nols=lm(Y~T)                       # run OLS regression\n# display results\nmodelsummary(ols, vcov = sandwich::vcovHC, \n             estimate = \"est = {estimate} (se = {std.error}, t = {statistic}){stars}\", \n             statistic = \"p = {p.value}, CI = [{conf.low}, {conf.high}]\",\n             gof_map = c(\"r.squared\"))   \n\n \n\n  \n    \n    \n    tinytable_7f2cb0tu5f968o2hresj\n    \n    \n    \n    \n  \n\n  \n    \n      \n        \n        \n              \n                 \n                (1)\n              \n        \n        \n        \n                \n                  (Intercept)\n                  est = 197.926 (se = 3.073, t = 64.416)***\n                \n                \n                             \n                  p = &lt;0.001, CI = [191.903, 203.949]      \n                \n                \n                  T          \n                  est = 16.055 (se = 4.074, t = 3.941)***  \n                \n                \n                             \n                  p = &lt;0.001, CI = [8.069, 24.041]         \n                \n                \n                  R2         \n                  0.002"
+  },
+  {
+    "objectID": "slides/03_exper.html#bootstrapping",
+    "href": "slides/03_exper.html#bootstrapping",
+    "title": "(3) Randomized Experiments",
+    "section": "Bootstrapping",
+    "text": "Bootstrapping\n\nBootstrap sampling: \\(B\\) randomly drawn samples of the same size as the original sample, with replacement\nCalculate the ATE in each bootstrap sample via regression\n\n\n\n\n\n\n\nSource: Huber, Martin (2023). Causal analysis: Impact evaluation and Causal Machine Learning with applications in R. MIT Press, 2023.\n\n\nCalculate the standard error by: \\(se(\\hat{\\beta_1}) = \\sqrt{\\frac{1}{B - 1} \\sum_{b=1}^{B} \\left(\\hat{\\beta_1^b} - \\frac{1}{B}\\sum_{b=1}^{B}\\hat{\\beta_1^b}\\right)^2}\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#ate-in-experiments-bootstrapping-example",
+    "href": "slides/03_exper.html#ate-in-experiments-bootstrapping-example",
+    "title": "(3) Randomized Experiments",
+    "section": "ATE in Experiments: Bootstrapping Example",
+    "text": "ATE in Experiments: Bootstrapping Example\n\nAssess the ATE of the program on the weekly earnings in the fourth year after the assignment among 9.240 individuals.\n\n\nlibrary(causalweight)             # load causalweight package \nlibrary(boot)                     # load boot package\ndata(JC)                          # load JC data\nT=JC$assignment                   # define treatment (assignment to JC)\nY=JC$earny4                       # define outcome (earnings in fourth year)\nbootdata=data.frame(Y,T)          # data frame with Y,D for bootstrap procedure\nbs=function(data, indices) {      # defines function bs for bootstrapping\n  dat=data[indices,]              # creates bootstrap sample according to indices \n  coefficients=lm(dat)$coef       # estimates coefficients in bootstrap sample  \n  return(coefficients)            # returns coefficients\n}                                 # closes the function bs  \nset.seed(1)                       # set seed\nresults = boot(data=bootdata, statistic=bs, R=1999) # 1999 bootstrap estimations \nresults                           # displays the results \n\n\nORDINARY NONPARAMETRIC BOOTSTRAP\n\n\nCall:\nboot(data = bootdata, statistic = bs, R = 1999)\n\n\nBootstrap Statistics :\n     original      bias    std. error\nt1* 197.92584  0.02480312    3.013465\nt2*  16.05513 -0.02075945    3.954810\n\ntstat=results$t0[2]/sd(results$t[,2])  # compute the t-statistic\n2*pnorm(-abs(tstat))                   # compute the p-value asssuming standard normal distribution\n\n           T \n4.914718e-05"
+  },
+  {
+    "objectID": "slides/03_exper.html#multivalued-treatments",
+    "href": "slides/03_exper.html#multivalued-treatments",
+    "title": "(3) Randomized Experiments",
+    "section": "Multivalued Treatments",
+    "text": "Multivalued Treatments\n\nTreatment can take on discrete values, which can be ordered or unordered:\n\n\\(T = 0, 1, 2, ...\\): 0 = 0 weeks of training, 1 = 1 week of training, 2 = 2 weeks of training, …\n\\(T = A, B, C, ...\\): A = no training, B = IT training, C = management training, …\n\n\n\n\nIndependence assumption can be adapted to hold for any treatment value:\n\n\\(Y_i(0), Y_i(1), Y_i(2), ..., Y_i(J) \\perp\\!\\!\\!\\perp T_i\\)\n\n\n\n\n\nAnalyze the ATEs of each non-zero treatment in a linear regression by including binary dummy variables for each:\n\n\\(\\mathbb{E}[Y_i | T_i] = \\underbrace{\\beta_0}_{E[Y_i | T_i=0]} + \\underbrace{\\beta_1}_{E[Y_i | T_i=1] - E[Y_i | T_i=0]} T_{i1} + \\underbrace{\\beta_2}_{E[Y_i |  T_i=2] - E[Y_i |  T_i=0]} T_{i2} + \\dots + \\underbrace{\\beta_J}_{E[Y_i | T_i=J] - E[Y_i | T_i=0]} T_{iJ}\\)\n\\(T_{ij} = 1\\) if \\(T_i = j\\) and \\(T_{ij} = 0\\) otherwise"
+  },
+  {
+    "objectID": "slides/03_exper.html#multivalued-treatments-example",
+    "href": "slides/03_exper.html#multivalued-treatments-example",
+    "title": "(3) Randomized Experiments",
+    "section": "Multivalued Treatments: Example",
+    "text": "Multivalued Treatments: Example\n\nAssess wage expectations (measure in brackets of 500 EUR) of 804 university students based on two-level treatment:\n\ntreatmentinformation: Graph with information on monthly gross private sector earnings shown.\ntreatmentorder: Reversed order of questions about professional and personal preferences (“framing”).\n\n\n\nlibrary(causalweight)             # load causalweight package \ndata(wexpect)                     # load wexpect data\nT1=wexpect$treatmentinformation   # define first treatment (wage information)\nT2=wexpect$treatmentorder         # define second treatment (order of questions)\nY=wexpect$wexpect2                # define outcome (wage expectations) \nols=lm(Y~T1+T2)                   # run OLS regression\n# display results\nmodelsummary(ols, vcov = sandwich::vcovHC, estimate = \"est = {estimate} (se = {std.error}, t = {statistic}){stars}\", statistic = \"p = {p.value}, CI = [{conf.low}, {conf.high}]\", gof_map = c(\"r.squared\"))   \n\n \n\n  \n    \n    \n    tinytable_h4kgvpyee44b91na4vbb\n    \n    \n    \n    \n  \n\n  \n    \n      \n        \n        \n              \n                 \n                (1)\n              \n        \n        \n        \n                \n                  (Intercept)\n                  est = 9.408 (se = 0.159, t = 59.268)***\n                \n                \n                             \n                  p = &lt;0.001, CI = [9.096, 9.719]        \n                \n                \n                  T1         \n                  est = 0.345 (se = 0.243, t = 1.421)    \n                \n                \n                             \n                  p = 0.156, CI = [-0.132, 0.822]        \n                \n                \n                  T2         \n                  est = -0.173 (se = 0.234, t = -0.741)  \n                \n                \n                             \n                  p = 0.459, CI = [-0.633, 0.286]        \n                \n                \n                  R2         \n                  0.006"
+  },
+  {
+    "objectID": "slides/03_exper.html#continuous-treatments",
+    "href": "slides/03_exper.html#continuous-treatments",
+    "title": "(3) Randomized Experiments",
+    "section": "Continuous Treatments",
+    "text": "Continuous Treatments\n\nTreatment can take on many (even infinitely) different values that respect cardinality.\n\ne.g. marketing expenditure in EUR, years of education, …\n\n\n\n\nIndependence assumption to hold for any values of the continuous treatment:\n\n\\(Y_i(t) \\perp\\!\\!\\!\\perp T_i\\)\n\n\n\n\n\nDiscretize a continuous treatment by generating binary indicators for (very small) brackets of values:\n\ne.g. \\(T_{i0} = 0\\) if \\(T_i \\leq 100\\), \\(T_{i1} = 1\\) if \\(100 &lt; T_i \\leq 200\\), …\n\n\n\n\n\nInclude \\(T_i\\) as a continuous variable in the regression model:\n\n\\(\\mathbb{E}[Y_i | T_i] = \\beta_0 + \\beta_1 T_i\\)\nFirst derivative of the expected value of \\(Y_i\\) with respect to \\(T_i\\) reflects the marginal effect of a one-unit increase in \\(T_i\\) on \\(Y_i\\):\n\\(ATE = \\frac{\\partial \\mathbb{E}[Y_i | T_i]}{\\partial T_i} = \\frac{\\partial \\mathbb{E}[Y_i(T_i)]}{\\partial T_i} = \\frac{\\partial \\mathbb{E}[Y_i]}{\\partial T_i} = \\beta_1\\)"
+  },
+  {
+    "objectID": "slides/03_exper.html#continuous-treatments-non-linearity",
+    "href": "slides/03_exper.html#continuous-treatments-non-linearity",
+    "title": "(3) Randomized Experiments",
+    "section": "Continuous Treatments: Non-Linearity",
+    "text": "Continuous Treatments: Non-Linearity\n\nLinearity: \\(\\frac{\\partial \\mathbb{E}[Y_i(T_i = t')]}{\\partial T_i} = \\frac{\\partial \\mathbb{E}[Y_i(T_i = t)]}{\\partial T_i}\\) for any \\(t' \\neq t\\) which \\(T_i\\) can take on\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nQuadratic term in the regression model:\n\n\\(\\mathbb{E}[Y_i | T_i] = \\beta_0 + \\beta_1 T_i + \\beta_2 T_i^2\\)\n\\(ATE = \\frac{\\partial \\mathbb{E}[Y_i | T_i]}{\\partial T_i} = \\beta_1 + 2 \\beta_2 T_i\\)\n\nIncrease model flexibility with higher-order terms (e.g. cubic, …) or non-parametric splines or kernel regression"
+  },
+  {
+    "objectID": "slides/03_exper.html#continuous-treatments-example",
+    "href": "slides/03_exper.html#continuous-treatments-example",
+    "title": "(3) Randomized Experiments",
+    "section": "Continuous Treatments: Example",
+    "text": "Continuous Treatments: Example\n\nAssess sales as a function of advertising spending in newspapers on a data set with 200 observations:\n\n\n\n\nlibrary(datarium)                 # load datarium package\nlibrary(np)                       # load np package\ndata(marketing)                   # load marketing data\nT=marketing$newspaper             # define treatment (newspaper advertising)\nY=marketing$sales                 # define outcome (sales)\nresults = npregbw(Y~T)             # kernel regression\n\n\nMultistart 1 of 1 |\nMultistart 1 of 1 |\nMultistart 1 of 1 |\nMultistart 1 of 1 /\nMultistart 1 of 1 |\nMultistart 1 of 1 |\n                   \n\nplot(results, plot.errors.method=\"asymptotic\") # plot regression function\n\n\n\n\n\n\n\n\n\n\nlibrary(datarium)                 # load datarium package\nlibrary(np)                       # load np package\ndata(marketing)                   # load marketing data\nT=marketing$newspaper             # define treatment (newspaper advertising)\nY=marketing$sales                 # define outcome (sales)\nresults = npregbw(Y~T)             # kernel regression\n\n\nMultistart 1 of 1 |\nMultistart 1 of 1 |\nMultistart 1 of 1 |\nMultistart 1 of 1 /\nMultistart 1 of 1 |\nMultistart 1 of 1 |\n                   \n\nplot(results, gradients=TRUE, plot.errors.method=\"asymptotic\") # plot effects"
+  },
+  {
+    "objectID": "slides/03_exper.html#including-covariates",
+    "href": "slides/03_exper.html#including-covariates",
+    "title": "(3) Randomized Experiments",
+    "section": "Including Covariates",
+    "text": "Including Covariates\n\nGiven successful randomization, there is no need to include covariates in the estimation of the ATE.\nHowever, including covariates can reduce variance and thus uncertainty in the estimation of the ATE.\n\\(Y_i = \\underbrace{\\hat{\\beta_0} + \\hat{\\beta}_1 T_i + \\hat{\\beta}_{X_1} X_{i1} + \\dots + \\hat{\\beta}_{X_K} X_{iK}}_{\\hat{E}[Y_i | T_i, X_i]} + \\hat{\\epsilon}_i\\)\n\\(R^2 = \\frac{\\text{Var}(\\hat{E}[Y_i | T_i, X_i])}{\\text{Var}(Y_i)}\\) gets larger while \\(\\frac{\\text{Var}(\\hat{\\epsilon}_i)}{\\text{Var}(Y_i)}\\) gets smaller with the inclusion of covariates.\nThis further reduces the standard error of the ATE estimate \\(se(\\hat{\\beta}_1)\\)."
+  },
+  {
+    "objectID": "slides/03_exper.html#including-covariates-1",
+    "href": "slides/03_exper.html#including-covariates-1",
+    "title": "(3) Randomized Experiments",
+    "section": "Including Covariates",
+    "text": "Including Covariates\n\n\n\nPre-treatment covariates\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPost-treatment covariates\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nControlling for post-treatment covariates is a bad idea:\n\n\nthey condition away part of the treatment effect\n\n\nthey introduce association between \\(T\\) and \\(U\\) as colliders and thus harm randomization."
+  },
+  {
+    "objectID": "slides/03_exper.html#including-covariates-example",
+    "href": "slides/03_exper.html#including-covariates-example",
+    "title": "(3) Randomized Experiments",
+    "section": "Including Covariates: Example",
+    "text": "Including Covariates: Example\n\nAssess the awareness about environmental issues of 522 university students after randomly receiving or not receiving a leaflet with information about the environmental and social implications of coffee production.\n\n\nlibrary(causalweight)             # load causalweight package \nlibrary(sandwich)                 # load sandwich package\ndata(coffeeleaflet)               # load coffeeleaflet data\nattach(coffeeleaflet)             # store all variables in own objects\nT=c(coffeeleaflet$treatment)         # define treatment (leaflet)\nY=c(coffeeleaflet$awarewaste)                      # define outcome (aware of waste production)\nX=cbind(coffeeleaflet$mumedu,coffeeleaflet$sex)               # define covariates (grade, gender, age)\nols=lm(Y~T+X)                     # run OLS regression\nmodelsummary(ols, vcov = sandwich::vcovHC, estimate = \"est = {estimate} (se = {std.error}, t = {statistic}){stars}\", statistic = \"p = {p.value}, CI = [{conf.low}, {conf.high}]\", gof_map = c(\"r.squared\"))  \n\n \n\n  \n    \n    \n    tinytable_kgy9rxl4nbepwrmdbh6f\n    \n    \n    \n    \n  \n\n  \n    \n      \n        \n        \n              \n                 \n                (1)\n              \n        \n        \n        \n                \n                  (Intercept)\n                  est = 1.187 (se = 0.249, t = 4.770)***\n                \n                \n                             \n                  p = &lt;0.001, CI = [0.698, 1.676]       \n                \n                \n                  T          \n                  est = 0.332 (se = 0.096, t = 3.449)***\n                \n                \n                             \n                  p = &lt;0.001, CI = [0.143, 0.521]       \n                \n                \n                  X1         \n                  est = 0.272 (se = 0.090, t = 3.007)** \n                \n                \n                             \n                  p = 0.003, CI = [0.094, 0.450]        \n                \n                \n                  X2         \n                  est = 0.137 (se = 0.100, t = 1.370)   \n                \n                \n                             \n                  p = 0.171, CI = [-0.060, 0.333]       \n                \n                \n                  R2         \n                  0.046"
+  },
+  {
     "objectID": "slides/01_intro.html#learning-goals",
     "href": "slides/01_intro.html#learning-goals",
     "title": "(1) Introduction to Causal Inference",
@@ -229,5 +684,495 @@
     "title": "(1) Introduction to Causal Inference",
     "section": "Other Causal Quantities",
     "text": "Other Causal Quantities\n\nThe ATE is just one of many causal quantities that can be estimated using the PO framework.\n\n\n\n\n“Average Treatment Effect on the Treated” (ATT):\n\n\n\\(ATT = \\mathbb{E}[Y_i(1)|T_i=1] - \\mathbb{E}[Y_i(0)|T_i=1]\\)\n\n\n\n\n\n\n“Conditional Average Treatment Effect” (CATE):\n\n\n\\(CATE = \\mathbb{E}[Y_i(1)|X_i=x] - \\mathbb{E}[Y_i(0)|X_i=x]\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#graphs",
+    "href": "slides/02_graphs.html#graphs",
+    "title": "(2) Graphical Causal Models",
+    "section": "Graphs",
+    "text": "Graphs\n\n\nGraph theory provides a useful mathematical language to think about causality.\nA graph consists of vertices (or nodes) V and edges (or links) E. Vertices represent variables in the model and edges the connections between them.\nEdges can either be undirected or directed."
+  },
+  {
+    "objectID": "slides/02_graphs.html#directed-graphs",
+    "href": "slides/02_graphs.html#directed-graphs",
+    "title": "(2) Graphical Causal Models",
+    "section": "Directed Graphs",
+    "text": "Directed Graphs\n\n\nCausal relationships are generally seen as asymmetric:\n\nIf ‘A causes B’ is true, then ‘B causes A’ must be false.\nTherefore we’ll work with directed graphs most of the times.\n\nWe’ll sometimes use terminology of kinship:\n\nA is parent of B.\nB is child of A.\nA is ancestor of D.\nD is descendant of A.\n\nA path is a sequence of edges connecting two vertices:\n\n\\(B \\gets A \\to C \\to D\\) is a path from B to D.\nA path can go either along or against arrowheads.\nA path along the arrows is called directed: \\(A \\to C \\to D\\)."
+  },
+  {
+    "objectID": "slides/02_graphs.html#directed-acyclic-graphs-dags",
+    "href": "slides/02_graphs.html#directed-acyclic-graphs-dags",
+    "title": "(2) Graphical Causal Models",
+    "section": "Directed Acyclic Graphs (DAGs)",
+    "text": "Directed Acyclic Graphs (DAGs)\n\n\nA directed path from a node to itself is called directed cycle or feedback loop: \\(B \\to C \\to D \\to B\\).\nGraph with feedback loops is called cyclic, with no feedback loops acyclic.\nWe focus on directed acyclic graphs (DAGs) in this course:\n\nexclude variables that influence themselves.\nEconometricians speak of recursive models that can be given a causal interpretation."
+  },
+  {
+    "objectID": "slides/02_graphs.html#bayesian-networks",
+    "href": "slides/02_graphs.html#bayesian-networks",
+    "title": "(2) Graphical Causal Models",
+    "section": "Bayesian Networks",
+    "text": "Bayesian Networks\n\nProbabilistic graphical models (not causal):\n\nModelling the joint data distribution by factorizing with the chain rule of probability: \\(P(x_1, x_2, \\ldots, x_n) = P(x_1) \\prod_{i} P(x_i \\mid x_{i-1}, \\ldots, x_1)\\)\nn = 4: \\(P(x_1, x_2, x_3, x_4) = P(x_1)P(x_2 \\mid x_1)P(x_3 \\mid x_2, x_1)P(x_4 \\mid x_3, x_2, x_1)\\)\n\\(P(x_4 \\mid x_3, x_2, x_1)\\) alone requires \\(2^3 - 1 = 8\\) parameters = &gt; Focus on local dependencies:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\\(P_{joint} = P(x_1)P(x_2 \\mid x_1)P(x_3 \\mid x_2, x_1)P(x_4 \\mid x_3)\\)\n\n\n\n\n\n\n\n\n\n\n\\(P_{joint} = P(x_1)P(x_2)P(x_3 \\mid x_1)P(x_4 \\mid x_3)\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#bayesian-networks-assumptions",
+    "href": "slides/02_graphs.html#bayesian-networks-assumptions",
+    "title": "(2) Graphical Causal Models",
+    "section": "Bayesian Networks: Assumptions",
+    "text": "Bayesian Networks: Assumptions\nGiven a probability distribution and a corresponding DAG, we can formalize the specification of local (in-) dependencies with:\n\n\n\nAssumption 2.1: “Local Markov Assumption”\n\n\nGiven its parents in the DAG, a node X is independent of all its non-descendants.\n\n\n\nIt follows:\n\n\n\nDefinition 2.1: “Bayesian Network Factorization”\n\n\nGiven a probability distribution \\(P\\) and a DAG \\(G\\), \\(P\\) factorizes according to \\(G\\) if:  \\(P(x_1, x_2, \\ldots, x_n) = \\prod_{i} P(x_i \\mid pa_i)\\)  with \\(pa_i\\) denoting the parents of node \\(i\\) in \\(G\\).\n\n\n\nThen \\(P\\) and \\(G\\) are called Markov compatible.\n\n\n\nAssumption 2.2: “Minimality Assumption”\n\n\n\nGiven its parents in the DAG, a node - is independent of all its non-descendants.\nAdjacent nodes in the DAG are dependent."
+  },
+  {
+    "objectID": "slides/02_graphs.html#causal-graph-assumption",
+    "href": "slides/02_graphs.html#causal-graph-assumption",
+    "title": "(2) Graphical Causal Models",
+    "section": "Causal Graph: Assumption",
+    "text": "Causal Graph: Assumption\nWe need a further assumption to go from associations to causal relationships in a DAG:\n\n\n\nDefinition 2.2: “What is a cause?”\n\n\nA variable X is said to be a cause of a variable Y if Y can change in response to changes in X.\n\n\n\nAn outcome variable Y listens to X.\n\n\n\nAssumption 2.3: “(Strict) Causal Edge Assumption”\n\n\nIn a directed graph, every parent is a direct cause of all its children.\n\n\n\nThis assumption is “strict” in the sense that every edge is active, just like in DAGs that satisfy minimality."
+  },
+  {
+    "objectID": "slides/02_graphs.html#graph-building-blocks-1",
+    "href": "slides/02_graphs.html#graph-building-blocks-1",
+    "title": "(2) Graphical Causal Models",
+    "section": "Graph Building Blocks",
+    "text": "Graph Building Blocks\n\nUnderstanding the flow of association and causation in DAGs based on minimal building blocks:\n\n\n\n\nTwo unconnected nodes: \\(P(x_1, x_2) = P(x_1) P(x_2)\\)\n\n\n\n\n\n\n\n\n\n\n\n\nTwo connected nodes: \\(P(x_1, x_2) = P(x_1) P(x_2 \\mid x_1)\\)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nChain:\n\n\n\n\n\n\n\n\n\n\n\n\nFork:\n\n\n\n\n\n\n\n\n\n\n\n\nImmorality:"
+  },
+  {
+    "objectID": "slides/02_graphs.html#chains",
+    "href": "slides/02_graphs.html#chains",
+    "title": "(2) Graphical Causal Models",
+    "section": "Chains",
+    "text": "Chains\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\\(x_1\\) and \\(x_3\\) are associated through \\(x_2\\)\n\nflow of association is symmetric whereas the flow of causality is directed\n\n\"Local Markov Assumption\": we can block the associative path by conditioning on the parent \\(x_2\\)\n\n\\(x_1 \\perp\\!\\!\\!\\perp x_3 | x_2\\)\n=&gt; \\(P(x_1, x_3 | x_2) = P(x_1 | x_2) P(x_3 | x_2)\\)\nProof?"
+  },
+  {
+    "objectID": "slides/02_graphs.html#chains-proof",
+    "href": "slides/02_graphs.html#chains-proof",
+    "title": "(2) Graphical Causal Models",
+    "section": "Chains: Proof",
+    "text": "Chains: Proof\n\n\"Bayesian network factorization\" of chains:\n\n\\(P(x_1, x_2, x_3) = P(x_1) P(x_2 | x_1) P(x_3 | x_2)\\)\n\n\"Bayes' rule\":\n\n\\(P(x_1, x_3 | x_2) = \\frac{P(x_1, x_2, x_3)}{P(x_2)}\\)\n\nSo that:\n\n\\(P(x_1, x_3 | x_2) = \\frac{P(x_1) P(x_2 | x_1) P(x_3 | x_2)}{P(x_2)}\\)\n\n\"Bayes' rule\" twice more:\n\n\\(P(x_2 | x_1) = \\frac{P(x_1, x_2)}{P(x_1)}\\) and \\(P(x_1 | x_2) = \\frac{P(x_1, x_2)}{P(x_2)}\\)\n\nSo that we finally obtain q.e.d.:\n\n\\(P(x_1, x_3 | x_2) = \\frac{P(x_1, x_2)}{P(x_2)} P(x_3 | x_2) = P(x_1 | x_2) P(x_3 | x_2)\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#forks",
+    "href": "slides/02_graphs.html#forks",
+    "title": "(2) Graphical Causal Models",
+    "section": "Forks",
+    "text": "Forks\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\\(x_1\\) and \\(x_3\\) are associated through \\(x_2\\) as common cause or confounder\n\"Local Markov Assumption\": we can block the associative path by conditioning on parent \\(x_2\\)\n\n\\(x_1 \\perp\\!\\!\\!\\perp x_3 | x_2\\)\n=&gt; \\(P(x_1, x_3 | x_2) = P(x_1 | x_2) P(x_3 | x_2)\\)\n\nProof? Do try this sh.. at home!"
+  },
+  {
+    "objectID": "slides/02_graphs.html#immoralities-and-colliders",
+    "href": "slides/02_graphs.html#immoralities-and-colliders",
+    "title": "(2) Graphical Causal Models",
+    "section": "Immoralities and Colliders",
+    "text": "Immoralities and Colliders\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nno association in the first place: \\(x_1 \\perp\\!\\!\\!\\perp x_3\\)\n\nno common cause (“confounder” like in a fork)\nneither is \\(x_3\\) a descendant of \\(x_1\\) (like in a chain)\n\\(x_1\\) and \\(x_3\\) are unrelated things contributing to \\(x_2\\)\n\\(x_2\\) acts as a \"collider\" that blocks the path between \\(x_1\\) and \\(x_3\\)\n\nbut only if we do not condition on \\(x_2\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#immoralities-and-colliders-proof",
+    "href": "slides/02_graphs.html#immoralities-and-colliders-proof",
+    "title": "(2) Graphical Causal Models",
+    "section": "Immoralities and Colliders: Proof",
+    "text": "Immoralities and Colliders: Proof\n\n\"Bayesian network factorization\" of immoralities:\n\n\\(P(x_1, x_2, x_3) = P(x_1)P(x_3)P(x_2 \\mid x_1, x_3)\\)\n\nMarginalizing out \\(x_2\\) (assuming discrete variables):\n\n\\(P(x_1, x_3) = \\sum_{x_2}P(x_1)P(x_3)P(x_2 \\mid x_1, x_3) = P(x_1)P(x_3) \\sum_{x_2}P(x_2 \\mid x_1, x_3)\\)\n\nSince summing over all possible values of the conditional probability \\(P(x_2 \\mid x_1, x_3)\\) equals 1, we obtain q.e.d.:\n\n\\(P(x_1, x_3) = P(x_1)P(x_3)\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#immoralities-and-colliders-example",
+    "href": "slides/02_graphs.html#immoralities-and-colliders-example",
+    "title": "(2) Graphical Causal Models",
+    "section": "Immoralities and Colliders: Example",
+    "text": "Immoralities and Colliders: Example\n\nLooks and talent are independent of each other in the general population\n\nbut both contribute to success (e.g. being casted as an actor, getting funding as founder, being in a relationship)\nin a selected sample of (un-) successful actors, looks and talent become negatively associated\nconditioning on success (by selecting a subsample) creates a selection bias (or Berkson's paradox)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#immoralities-and-colliders-numerical-example",
+    "href": "slides/02_graphs.html#immoralities-and-colliders-numerical-example",
+    "title": "(2) Graphical Causal Models",
+    "section": "Immoralities and Colliders: Numerical Example",
+    "text": "Immoralities and Colliders: Numerical Example\n\nData generating process (dgp): \\(x_1 \\sim N(0, 1), \\quad x_3 \\sim N(0,1), \\quad x_2 = x_1 + x_3\\)\nCovariance in the population:\n\n\\[\\begin{align*}\n\\text{Cov}(x_1, x_3) &= \\mathbb{E}[(x_1 - \\mathbb{E}[x_1])(x_3 - \\mathbb{E}[x_3])] \\\\\n&= \\mathbb{E}[x_1x_3] \\quad (\\text{zero mean})\\\\\n&= \\mathbb{E}[x_1]\\mathbb{E}[x_3] \\quad (\\text{independent}) \\\\\n&= 0\n\\end{align*}\\]\n\n\nConditional covariance is the expected value of the product \\(x_1x_3\\), conditioned on \\(x_2\\) being equal to some value \\(x\\):\n\n\\[\\begin{align*}\n\\text{Cov}(x_1, x_3 | x_2 = x)\n&= \\mathbb{E}[x_1x_3 | x_2 = x] \\\\\n&= \\mathbb{E}[x_1(x - x_1)] \\quad (\\text{substituting x_3 by x - x_1 as per dgp}) \\\\\n&= x\\mathbb{E}[x_1] - \\mathbb{E}[x_1^2] \\quad (\\text{x is constant and expectations linear}) \\\\\n&= -1 \\quad (\\text{E(x_1) = 0 and E(x_1*x_1) = Var(x_1) = 1})\n\\end{align*}\\]"
+  },
+  {
+    "objectID": "slides/02_graphs.html#immoralities-and-colliders-numerical-example-1",
+    "href": "slides/02_graphs.html#immoralities-and-colliders-numerical-example-1",
+    "title": "(2) Graphical Causal Models",
+    "section": "Immoralities and Colliders: Numerical Example",
+    "text": "Immoralities and Colliders: Numerical Example\n\n\nShow code\nlibrary(tidyverse)\nlibrary(ggplot2)\nlibrary(ggpubr) \n\n# simulate data\nset.seed(123) # for reproducibility\nlooks &lt;- rnorm(1000)\ntalent &lt;- rnorm(1000)\nx &lt;- talent + looks\ngroup &lt;- 1 * (x &gt; quantile(x, c(.75)))\n\n# create a dataframe\ndf &lt;- data.frame(looks, talent, group) %&gt;%\n  mutate(group = if_else(group == 1, \"With Job\", \"Without Job\")) %&gt;%\n  add_row(looks = Inf, talent = -Inf, group = \"Overall\")\n\n# plot\nggplot(df, aes(x = looks, y = talent)) +\n  geom_point(aes(color = group)) + \n  geom_smooth(method = \"lm\", se = FALSE, formula = y ~ x, aes(color = \"Overall\")) + # Regression line for all data\n  geom_smooth(data = subset(df, group == \"With Job\"), method = \"lm\", se = FALSE, formula = y ~ x, aes(color = \"With Job\")) +\n  geom_smooth(data = subset(df, group == \"Without Job\"), method = \"lm\", se = FALSE, formula = y ~ x, aes(color = \"Without Job\")) +\n  stat_regline_equation(aes(label = ..eq.label.., color = as.factor(group)), formula = y ~ x) +\n  stat_regline_equation(aes(label = ..eq.label.., color = \"Overall\"), formula = y ~ x) +\n  labs(color = \"Group\") +\n  theme(legend.position = \"bottom\")"
+  },
+  {
+    "objectID": "slides/02_graphs.html#descendants-of-colliders",
+    "href": "slides/02_graphs.html#descendants-of-colliders",
+    "title": "(2) Graphical Causal Models",
+    "section": "Descendants of Colliders",
+    "text": "Descendants of Colliders"
+  },
+  {
+    "objectID": "slides/02_graphs.html#d-separation-1",
+    "href": "slides/02_graphs.html#d-separation-1",
+    "title": "(2) Graphical Causal Models",
+    "section": "d-Separation",
+    "text": "d-Separation\n\nSo far we only looked at graphs containing three variables. Can we somehow generalize these criteria?\n\n\n\n\nDefinition 2.3: “Blocked Path”\n\n\nA path \\(p\\) between nodes \\(X\\) and \\(Y\\) is blocked by a (potentially empty) conditioning set \\(Z\\) if either of the following is true:\n\n\\(p\\) contains a chain of nodes \\(... \\rightarrow W \\rightarrow ...\\) or a fork \\(... \\leftarrow W \\rightarrow ...\\), and \\(W\\) is conditioned, i.e. \\(W \\in Z\\).\n\\(p\\) contains an immorality \\(... \\rightarrow W \\leftarrow ...\\), and the collider \\(W\\) is not conditioned, i.e. \\(W \\notin Z\\).\n\n\n\n\n\n\n\nDefinition 2.4: “d-Separation”\n\n\nTwo nodes \\(X\\) and \\(Y\\) are d-separated by a set of nodes \\(Z\\) if all of the paths between \\(X\\) and \\(Y\\) are blocked by \\(Z\\)."
+  },
+  {
+    "objectID": "slides/02_graphs.html#d-separation-2",
+    "href": "slides/02_graphs.html#d-separation-2",
+    "title": "(2) Graphical Causal Models",
+    "section": "d-Separation",
+    "text": "d-Separation\n\nIf two nodes are d-separated, and not d-connected, the variables they represent are independent.\n\n\n\n\nTheorem 2: “Global Markov Assumption”\n\n\nGiven that \\(P\\) is Markov compatible with respect to \\(G\\) (satisfies the local Markov assumption), if \\(X\\) and \\(Y\\) are d-separated in \\(G\\) conditioned on \\(Z\\), then \\(X\\) and \\(Y\\) are independent in \\(P\\) conditioned on \\(Z\\).\nFormally, \\(X \\perp\\!\\!\\!\\perp_{G} Y \\,|\\, Z \\implies X \\perp\\!\\!\\!\\perp_{P} Y \\,|\\, Z\\)."
+  },
+  {
+    "objectID": "slides/02_graphs.html#d-separation-practice-1",
+    "href": "slides/02_graphs.html#d-separation-practice-1",
+    "title": "(2) Graphical Causal Models",
+    "section": "d-Separation Practice 1",
+    "text": "d-Separation Practice 1\n\n\n\n\nShow code\nlibrary(ggdag)\nlibrary(ggplot2)\ndag &lt;- dagify(\n  # relationship for each node\n  W ~ Z,\n  W ~ X,\n  Y ~ X,\n  U ~ W,\n # Location of each node\n  coords = list(\n    x = c(Z = 0, W = 1, X = 2, Y = 3, U = 1),\n    y = c(Z = 0, W = -0.5, X = 0, Y = 0, U = -1)\n  )\n)\n\ndag %&gt;%\n  ggplot(aes(x = x, y = y,\n             xend = xend, yend = yend)) +\n  geom_dag_text(color = \"black\") +\n  geom_dag_edges() +\n  geom_dag_point(shape = 1) +\n  theme_dag()\n\n\n\n\n\n\n\n\n\n\n\\(Z\\) and \\(Y\\) d-separated conditional on\n\n\\(\\emptyset\\) ? 2. \\(\\{W\\}\\) ? 3. \\(\\{U\\}\\) ? 4. \\(\\{W, X\\}\\) ?\n\n\n\n\n\n1:\n\n\nlibrary(dagitty)\ndag &lt;- dagify(\n  W ~ Z,\n  W ~ X,\n  Y ~ X,\n  U ~ W\n)\ndseparated(dag, X=\"Z\", Y=\"Y\", Z = c())\n\n[1] TRUE\n\n\n\n2:\n\n\n\n[1] FALSE\n\n\n\n3:\n\n\n\n[1] FALSE\n\n\n\n4:\n\n\n\n[1] TRUE"
+  },
+  {
+    "objectID": "slides/02_graphs.html#d-separation-practice-2",
+    "href": "slides/02_graphs.html#d-separation-practice-2",
+    "title": "(2) Graphical Causal Models",
+    "section": "d-Separation Practice 2",
+    "text": "d-Separation Practice 2\n\n\n\n\nShow code\nlibrary(ggdag)\nlibrary(ggplot2)\ndag &lt;- dagify(\n  Y ~ M2 + X3 + W3,\n  W3 ~ W2,\n  W1 ~ W2,\n  T ~ W1,\n  M1 ~ T,\n  M2 ~ M1,\n  X1 ~ T,\n  X3 ~ Y,\n  X2 ~ X1 + X3,\n  coords = list(\n    x = c(T = 0, W1 = 1, W2 = 1.5, W3 = 2, M1 = 1, M2 = 2, Y = 3, X1 = 1, X2 = 1.5, X3 = 2),\n    y = c(T = -1, W1 = 0, W2 = 0.5, W3 = 0, M1 = -1, M2 = -1, Y = -1, X1 = -2, X2 = -2.5, X3 = -2)\n  )\n)\n\n\ndag %&gt;%\n  ggplot(aes(x = x, y = y,\n             xend = xend, yend = yend)) +\n  geom_dag_text(color = \"black\") +\n  geom_dag_edges() +\n  geom_dag_point(shape = 1) +\n  theme_dag()\n\n\n\n\n\n\n\n\n\n\n\\(T\\) and \\(Y\\) d-separated conditional on\n\n\\(\\emptyset\\) ? 2. \\(\\{W_2\\}\\) ? 3. \\(\\{W_2, M_1\\}\\) ?\n\\(\\{W_1, M_2\\}\\) ? 5. \\(\\{W_1, M_2, X_2 \\}\\) ? 6. \\(\\{W_1, M_2, X_2, X_3 \\}\\) ?\n\n\n\n\n\n1:\n\n\n\n[1] FALSE\n\n\n\n2:\n\n\n\n[1] FALSE\n\n\n\n3:\n\n\n\n[1] TRUE\n\n\n\n4:\n\n\n\n[1] TRUE\n\n\n\n5:\n\n\n\n[1] FALSE\n\n\n\n6:\n\n\n\n[1] TRUE"
+  },
+  {
+    "objectID": "slides/02_graphs.html#flow-of-association-and-causation---summary",
+    "href": "slides/02_graphs.html#flow-of-association-and-causation---summary",
+    "title": "(2) Graphical Causal Models",
+    "section": "Flow of Association and Causation - Summary",
+    "text": "Flow of Association and Causation - Summary\n\nTotal association between two variables flows along all unblocked paths in a causal graph.\n\nAssociation that flows along directed, unblocked paths is causal association.\nThe remaining association is non-causal association, e.g. selection bias or confounding association.\nCausal association is asymmetric, non-causal association is symmetric.\nCausal association is a subcategory of total association.\n\nd-separation can imply “Association is Causation`\n\nIgnoring the causal paths, are X and Y d-separated otherwise?"
+  },
+  {
+    "objectID": "slides/02_graphs.html#structural-causal-models",
+    "href": "slides/02_graphs.html#structural-causal-models",
+    "title": "(2) Graphical Causal Models",
+    "section": "Structural Causal Models",
+    "text": "Structural Causal Models\n\n\n\nA DAG represents an underlying structural causal model:\n\\(f_i\\)’s can be arbitrary, non-parametric functions\n\nas opposed to structural equation models (SEM) in econometrics\n\n\\(\\epsilon_i\\)’s are unobserved error terms\n\nMarkovian model: all errors are assumed to be jointly independent and hence not shown in the graph.\nsemi-Markovian model: some errors are correlated and shown in the graph; e.g. \\(u\\) in the example.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\\(Y = f_1(T, \\epsilon_1)\\)\n\\(T = f_2(X_1, X_2, \\epsilon_2)\\)\n\\(X_1 = f_3(u, \\epsilon_3)\\)\n\\(X_2 = f_4(u, \\epsilon_4)\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#conditioning-vs-intervention",
+    "href": "slides/02_graphs.html#conditioning-vs-intervention",
+    "title": "(2) Graphical Causal Models",
+    "section": "Conditioning vs Intervention",
+    "text": "Conditioning vs Intervention\n\n\n\n\n\n\nNeal, Brady (2020). Introduction to causal inference from a Machine Learning Perspective. Course Lecture Notes (draft)."
+  },
+  {
+    "objectID": "slides/02_graphs.html#interventions-and-the-do-operator",
+    "href": "slides/02_graphs.html#interventions-and-the-do-operator",
+    "title": "(2) Graphical Causal Models",
+    "section": "Interventions and the do-Operator",
+    "text": "Interventions and the do-Operator\n\nInterventions in causal models are defined by the do-operator.\nNotation: \\(P(Y|do(T = t))\\) stands for:\n\n“probability distribution of \\(Y\\) if we fix \\(T\\) to the specific value \\(t\\)”.\nInterventional distributions are not the same as conditional or observational distributions.\n\nWe can also write the ATE with it: \\[\\text{ATE} = \\mathbb{E}[Y(1)] - \\mathbb{E}[Y(0)] = \\mathbb{E}[Y|do(T = 1)] - \\mathbb{E}[Y|do(T = 0)]\\]\nMany (if not most) questions we try to answer with data involve some form of intervention, treatment, or action:\n\nP(Performance | do(Training))\nP(Sales | do(Incentive))\nP(Click-through Rate | do(Advertising))\nP(Churn | do(Call Center))"
+  },
+  {
+    "objectID": "slides/02_graphs.html#interventions-and-the-do-operator-1",
+    "href": "slides/02_graphs.html#interventions-and-the-do-operator-1",
+    "title": "(2) Graphical Causal Models",
+    "section": "Interventions and the do-Operator",
+    "text": "Interventions and the do-Operator\n\nIn graphical models, intervening on a variable X is similar to a kind of surgery in which we remove all edges into that variable:\n\n\n\n\nPre-Intervention\n\n\n\n\n\n\n\n\n\n\n\n\\(Y = f_y(T, X, \\epsilon_y)\\)\n\\(T = f_2(X, \\epsilon_T)\\)\n\\(X = f_3(\\epsilon_X)\\)\n\n\n\nPost-Intervention\n\n\n\n\n\n\n\n\n\n\n\n\\(Y = f_y(T, X, \\epsilon_y)\\)\n\\(T = t\\)\n\\(X = f_3(\\epsilon_X)\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#interventions-and-the-do-operator-2",
+    "href": "slides/02_graphs.html#interventions-and-the-do-operator-2",
+    "title": "(2) Graphical Causal Models",
+    "section": "Interventions and the do-Operator",
+    "text": "Interventions and the do-Operator\n\nBayesian network factorization of the pre-intervention DAG:\n\n\\(P(Y, T, X) = P(X)P(T|X)P(Y|T,X)\\)\n\nIf we intervene on \\(T\\) and set it to \\(t\\), the factorization changes:\n\n\\(P(Y, X | do(T = t)) = P(X)P(Y|T = t, X)\\)\n\nMarginalizing out \\(X\\) gives the interventional distribution of \\(Y\\):\n\n\\(P(Y | do(T = t)) = \\sum_{x} P(Y|T = t, X = x)P(X = x)\\)\n\nTo obtain the causal effect, we condition on the values of \\(X\\) and average over the distribution.\nWe only obtain the associational counterpart \\(P(Y|T = t)\\) if \\(P(X)\\) would have to be replaced by \\(P(X|T = t)\\).\n\nThen: \\(\\sum_{x} P(Y|T = t, X = x)P(X|T = t) = \\sum_{x} P(Y, X|T = t) = P(Y| T= t)\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#interventions-and-the-do-operator-3",
+    "href": "slides/02_graphs.html#interventions-and-the-do-operator-3",
+    "title": "(2) Graphical Causal Models",
+    "section": "Interventions and the do-Operator",
+    "text": "Interventions and the do-Operator\n\nCarrying out an intervention ourselves, in a randomized control trial, is not always feasible (too expensive, impractical, or unethical).\nHow can we then identify the effect of interventions purely from observational data?\n\nWe want to know \\(P(Y|do(T = t))\\) but all we have is data \\(P(Y,X,T)\\).\nAnd we know that \\(P(Y|do(T = t) \\neq P(Y|T))\\) (i.e. “correlation is not causation”).\nNo fancy machine learning algorithm will ever (?) solve this problem.\n\nOne way is to find a way to transform \\(P(Y|do(T = t))\\) into an expression that only contains observed, “do-free” quantities."
+  },
+  {
+    "objectID": "slides/02_graphs.html#backdoor-adjustment-1",
+    "href": "slides/02_graphs.html#backdoor-adjustment-1",
+    "title": "(2) Graphical Causal Models",
+    "section": "Backdoor Adjustment",
+    "text": "Backdoor Adjustment\n\nThe backdoor criterion is a graphical condition that allows us to identify causal effects from observational data.\n\n\n\n\nDefinition 2.5: “Backdoor Criterion”\n\n\nA set of variables \\(W\\) satisfies the backdoor criterion relative to \\(T\\) and \\(Y\\) if the following are true:\n\n\\(W\\) blocks all backdoor paths between \\(T\\) and \\(Y\\) that contains an arrow into \\(T\\).\n\\(W\\) does not contain any descendants of \\(T\\).\n\n\n\n\n\nIf a set of variables \\(W\\) satisfies the backdoor criterion for \\(T\\) and \\(Y\\), then the causal effect is given by: \\(P(Y|\\text{do}(T = t)) = \\sum_{W} P(Y|T = t, W = w)P(W = w)\\).\n\ni.e. condition on the values of \\(W\\) and average over their joint distribution"
+  },
+  {
+    "objectID": "slides/02_graphs.html#backdoor-adjustment-proof",
+    "href": "slides/02_graphs.html#backdoor-adjustment-proof",
+    "title": "(2) Graphical Causal Models",
+    "section": "Backdoor Adjustment: Proof",
+    "text": "Backdoor Adjustment: Proof\n\nConditioning on the variables \\(W\\) and marginalizing them out:\n\n\\(P(Y|\\text{do}(T = t)) = \\sum_{W} P(Y|\\text{do}(T = t), W = w)P(W| \\text{do}(T = t))\\)\n\nGet rid of the first “do” by using the definition of the do-operator - “all backdoor paths blocked”:\n\n\\(\\sum_{W} P(Y|\\text{do}(T = t), W = w)P(W| \\text{do}(T = t)) = \\sum_{W} P(Y|T = t, W = w)P(W| \\text{do}(T = t))\\)\n\nGet rid of the second “do” by using the definition of the do-operator - “no descendants of T in W”:\n\n\\(\\sum_{W} P(Y|T = t, W = w)P(W| \\text{do}(T = t)) = \\sum_{W} P(Y|T = t, W = w)P(W)\\)"
+  },
+  {
+    "objectID": "slides/02_graphs.html#backdoor-adjustment-example",
+    "href": "slides/02_graphs.html#backdoor-adjustment-example",
+    "title": "(2) Graphical Causal Models",
+    "section": "Backdoor Adjustment: Example",
+    "text": "Backdoor Adjustment: Example\n\n\n\n\nShow code\nlibrary(ggdag)\nlibrary(ggplot2)\ndag &lt;- dagify(\n  T ~ X1 + X2,\n  X6 ~ T,\n  X2 ~ X3,\n  X1 ~ X3 + X4,\n  X5 ~ X4,\n  Y ~ X1 + X5 + X6,\n  exposure = \"T\", outcome = \"Y\",\n  coords = list(\n    x = c(T = 0, X1 = 1, X2 = 0, X3 = 0, X4 = 2, X5 = 2, X6 = 1, Y = 2),\n    y = c(T = 0, X1 = 1, X2 = 1, X3 = 2, X4 = 2, X5 = 1, X6 = 0, Y = 0)\n  )\n)\n\ndag %&gt;%\n  ggplot(aes(x = x, y = y,\n             xend = xend, yend = yend)) +\n  geom_dag_text(color = \"black\") +\n  geom_dag_edges() +\n  geom_dag_point(shape = 1) +\n  theme_dag()\n\n\n\n\n\n\n\n\n\n\n\nMinimum sufficient adjustment sets?\n\n\n\n\nShow code\nlibrary(ggdag)\nlibrary(ggplot2)\ndag &lt;- dagify(\n  T ~ X1 + X2,\n  X6 ~ T,\n  X2 ~ X3,\n  X1 ~ X3 + X4,\n  X5 ~ X4,\n  Y ~ X1 + X5 + X6,\n  exposure = \"T\", outcome = \"Y\",\n  coords = list(\n    x = c(T = 0, X1 = 1, X2 = 0, X3 = 0, X4 = 2, X5 = 2, X6 = 1, Y = 2),\n    y = c(T = 0, X1 = 1, X2 = 1, X3 = 2, X4 = 2, X5 = 1, X6 = 0, Y = 0)\n  )\n)\n\nadjustmentSets(dag)\n\n\n{ X1, X5 }\n{ X1, X4 }\n{ X1, X3 }\n{ X1, X2 }"
+  },
+  {
+    "objectID": "slides/02_graphs.html#relation-to-the-potential-outcomes-framework",
+    "href": "slides/02_graphs.html#relation-to-the-potential-outcomes-framework",
+    "title": "(2) Graphical Causal Models",
+    "section": "Relation to the Potential Outcomes Framework",
+    "text": "Relation to the Potential Outcomes Framework\n\nATE in the PO framework:\n\n\\(\\tau = \\mathbb{E}[Y_i(1)] - \\mathbb{E}[Y_i(0)] = \\mathbb{E_X}[\\mathbb{E}[Y_i|T_i=1, X_i] - \\mathbb{E}[Y_i|T_i=0, X_i]]\\)\n\ndo-notation \\(\\mathbb{E}(Y|do(T = t))\\) just another notation for the potential outcomes \\(\\mathbb{E}[Y(t)]\\).\n\nExpectations and discrete treatement vs. probability weighted averages and continuous/ multi-valued treatments.\n\nThe backdoor criterion is a graphical condition to identify valid adjustment sets for the potential outcomes framework.\n\nBut we had no way of knowing how to choose \\(W\\) such that it gives us conditional exchangeability.\nThe backdoor criterion is a graphical condition to choose a valid \\(W\\).\nIt is neither necessary nor suffcient to condition on all variables in the data and model.\nCan even be harmful to condition on a (collider) variable.\n\nOnce we have found an admissible adjustment set, we can estimate the causal effect by matching, inverse probability weighting, or linear regression (if you’re willing to assume linearity)."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#what-to-do-without-randomized-experiment",
+    "href": "slides/04_ob_conf.html#what-to-do-without-randomized-experiment",
+    "title": "(4) Observed Confounding",
+    "section": "What to do without randomized experiment?",
+    "text": "What to do without randomized experiment?\n\n\nIn many business settings, randomization of treatments is not possible.\n\nWe need to find ways to work with so-called observational data.\n\nIdentification strategy to adjust for all confounders has many names:\n\nIgnorability\nUnconfoundedness\nSelection-on-observables\nConditional independence\nBackdoor adjustment\nMeasured confounding\nObserved Confounding"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#assumption-1-conditional-independence",
+    "href": "slides/04_ob_conf.html#assumption-1-conditional-independence",
+    "title": "(4) Observed Confounding",
+    "section": "Assumption 1: Conditional Independence",
+    "text": "Assumption 1: Conditional Independence\n\nPotential outcomes are conditionally independent of \\(T\\) after controlling for covariates \\(\\mathbf{X}\\).\n\n\\(T\\) is as good as randomly assigned among subjects with the same values in \\(\\mathbf{X}\\).\n\n\n\n\n\nAssumption: “Conditional Exchangeability / Unconfoundedness / Ignorability / Independence”.\n\n\nFormally, \\((Y(1), Y(0)) \\perp\\!\\!\\!\\perp T \\, | \\, \\mathbf{X}\\).\n\n\n\n\n\nThis entails the somewhat weaker, but sufficient formulation of conditional exchangeability in terms of means:\n\nbefore treatment: \\(\\mathbb{E}[Y_i(0)|T_i=0, \\mathbf{X_i = x_i}] = \\mathbb{E}[Y_i(0)|T_i=1, \\mathbf{X_i = x_i}]\\)\nafter treatment: \\(\\mathbb{E}[Y_i(1)|T_i=1, \\mathbf{X_i = x_i}] = \\mathbb{E}[Y_i(1)|T_i=0, \\mathbf{X_i = x_i}]\\)\ndifferences in mean potential outcomes across treatment and control groups are entirely due to differences in observed covariates."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#backdoor-adjustement",
+    "href": "slides/04_ob_conf.html#backdoor-adjustement",
+    "title": "(4) Observed Confounding",
+    "section": "Backdoor Adjustement",
+    "text": "Backdoor Adjustement\n\n\n\nall confounders observed, measured and controlled for\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nsome confounders remain unobserved\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nMinimal adjustment set of confounders to be observed: not testable.\nSensitivity analysis can be used to assess the robustness of the results to unobserved confounding (later session)."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#observed-confounder-selection",
+    "href": "slides/04_ob_conf.html#observed-confounder-selection",
+    "title": "(4) Observed Confounding",
+    "section": "Observed Confounder Selection",
+    "text": "Observed Confounder Selection\n\nCredible identification demands to define the adjustment set of variables that makes conditional independence assumption credible to hold.\nThis requires good theoretical or practical knowledge about the treatment assignment mechanism.\nDAGs provide a principled framework to structure that knowledge and to disentangle good and bad controls:\n\nNo post-treatment variables, etc …\nSee Cinelly, Forley and Pearl (2022) for a nice overview."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#assumption-2-common-support",
+    "href": "slides/04_ob_conf.html#assumption-2-common-support",
+    "title": "(4) Observed Confounding",
+    "section": "Assumption 2: Common Support",
+    "text": "Assumption 2: Common Support\n\nConditioning on many covariates can also be detrimental, because we might end up conditioning on a zero probability event for some subgroups / values of X (division by zero)\n\n\n\n\nAssumption: “Positivity / Overlap / Common Support”.\n\n\nFor all values of covariates \\(x\\) present in the population of interest (i.e. \\(x\\) such that \\(P(X=x) &gt; 0\\)), we have \\(0 &lt; P(T=1|X=x) &lt; 1\\).\n\n\n\n\n\nThere is a trade-off between positivity and conditional independence.\nSome models might be forced to extrapolate to regions without sufficient support by using their parametric assumptions.\n\nParametric instead of non-parametric identification."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#common-support-extrapolation",
+    "href": "slides/04_ob_conf.html#common-support-extrapolation",
+    "title": "(4) Observed Confounding",
+    "section": "Common Support & Extrapolation",
+    "text": "Common Support & Extrapolation"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#ate-under-observed-confounding",
+    "href": "slides/04_ob_conf.html#ate-under-observed-confounding",
+    "title": "(4) Observed Confounding",
+    "section": "ATE under Observed Confounding",
+    "text": "ATE under Observed Confounding\n\nWith the assumptions of conditional unconfoundedness & positivity (together with consistency, and no interference), we can identify the ATE as:\n\n\n\n\nTheorem: “Identification of the ATE”:\n\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}[Y_i(1)] - \\mathbb{E}[Y_i(0)] = \\mathbb{E_X}[\\mathbb{E}[Y_i|T_i=1, X_i] - \\mathbb{E}[Y_i|T_i=0, X_i]]\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#ate-under-observed-confounding-1",
+    "href": "slides/04_ob_conf.html#ate-under-observed-confounding-1",
+    "title": "(4) Observed Confounding",
+    "section": "ATE under Observed Confounding",
+    "text": "ATE under Observed Confounding\n\nProof:\n\n\\[\n\\begin{align*}\n\\tau_{\\text{ATE}} = \\mathbb{E}[\\tau_i] &= \\mathbb{E}[Y_i(1) - Y_i(0)] \\\\\n&= \\mathbb{E}[Y_i(1)] - \\mathbb{E}[Y_i(0)] \\\\\n&\\text{(linearity of expectation)} \\\\\n&= \\mathbb{E}_X [\\mathbb{E}[Y_i(1) \\mid X_i]] - \\mathbb{E}_X [\\mathbb{E}[Y_i(0) \\mid X_i]] \\\\\n&\\text{(law of iterated expectations)} \\\\\n&= \\mathbb{E}_X [\\mathbb{E}[Y_i(1) \\mid T_i = 1, X_i]] - \\mathbb{E}_X [\\mathbb{E}[Y_i(0) \\mid T_i = 0, X_i]] \\\\\n&\\text{(conditional ignorability and positivity)} \\\\\n&= \\mathbb{E}_X [\\mathbb{E}[Y_i \\mid T_i = 1, X_i]] - \\mathbb{E}_X [\\mathbb{E}[Y_i \\mid T_i = 0, X_i]] \\\\\n&\\text{(consistency)}\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#identification-with-linear-regression",
+    "href": "slides/04_ob_conf.html#identification-with-linear-regression",
+    "title": "(4) Observed Confounding",
+    "section": "Identification with Linear Regression",
+    "text": "Identification with Linear Regression\n\nMost direct approach is to run a linear regression conditional on covariates:\n\n\\(Y_i = \\beta_0 + \\beta_T T_i + \\beta_{X_1} X_{i1} + \\dots + \\beta_{X_K} X_{iK} + \\epsilon_i\\)\n\\(Y_i = \\beta_0 + \\beta_T T_i + \\mathbf{\\beta_{X}' X_i} + \\epsilon_i\\)\n\\(\\mathbb{E}[Y_i | T_i, \\mathbf{X_i}] = \\beta_0 + \\beta_T T_i + \\mathbf{\\beta_{X}' X_i}\\)\n\n\n\n\nIf this linear model is correct, then (given \\(T_i\\) is binary):\n\n\\(\\tau_{\\text{CATE}} = \\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i}] - \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i}]\\)\n\\(\\tau_{\\text{CATE}} = (\\beta_0 + \\beta_T \\cdot 1  + \\mathbf{\\beta_{X}' X_i}) - (\\beta_0 + \\beta_T \\cdot 0 + \\mathbf{\\beta_{X}' X_i}) = \\beta_T\\)\n\\(\\tau_{\\text{ATE}} = \\mathbb{E_X}[\\beta_T] = \\beta_T\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#frisch-waugh-lovell-fwl-theorem",
+    "href": "slides/04_ob_conf.html#frisch-waugh-lovell-fwl-theorem",
+    "title": "(4) Observed Confounding",
+    "section": "Frisch-Waugh-Lovell (FWL) Theorem",
+    "text": "Frisch-Waugh-Lovell (FWL) Theorem\n\nWe can estimate \\(\\beta_T\\) in a standard linear regression \\(Y_i = \\beta_0 + \\beta_T T_i + \\mathbf{\\beta_{X}' X_i} + \\epsilon_i\\) in a three-stage procedure:\n\n\nRun a regression of the form \\(Y_i = \\beta_{Y0} + \\mathbf{\\beta_{Y \\sim X}' X_i} + \\epsilon_{Y_i \\sim X_i}\\) and extract the estimated residuals \\(\\hat\\epsilon_{Y_i \\sim X_i}\\).\nRun a regression of the form \\(T_i = \\beta_{T0} + \\mathbf{\\beta_{T \\sim X}' X_i} + \\epsilon_{T_i \\sim X_i}\\) and extract the estimated residuals \\(\\hat\\epsilon_{T_i \\sim X_i}\\).\nRun a residual-on-residual regression of the form \\(\\hat\\epsilon_{Y_i \\sim X_i} = \\beta_T \\hat\\epsilon_{T_i \\sim X_i} + \\epsilon_i\\) (no constant).\n\nThe resulting estimate \\(\\hat\\beta_T\\) is numerically identical to the estimate we would get if we just run the full OLS model."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#controlling-for-covariates-fwl-theorem-logic",
+    "href": "slides/04_ob_conf.html#controlling-for-covariates-fwl-theorem-logic",
+    "title": "(4) Observed Confounding",
+    "section": "Controlling for Covariates: FWL Theorem Logic",
+    "text": "Controlling for Covariates: FWL Theorem Logic"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#identification-with-linear-regression-1",
+    "href": "slides/04_ob_conf.html#identification-with-linear-regression-1",
+    "title": "(4) Observed Confounding",
+    "section": "Identification with Linear Regression",
+    "text": "Identification with Linear Regression\n\nOLS estimate of \\(\\hat{\\beta_T}\\) is now given by:\n\n\\(Y_i = \\hat{\\beta_0} + \\hat{\\beta}_T T_i + \\mathbf{\\hat{\\beta}_{X}' X_i} + \\hat{\\epsilon}_i\\)\n\\(\\hat{\\beta_T} = \\frac{\\text{Cov}(Y_i, T_i | \\mathbf{X_i})}{\\text{Var}(T_i | \\mathbf{X_i})}\\)\nDifference to randomized experiments: \\(\\mathbf{X_i}\\) may affect \\(T_i\\), i.e. \\(\\text{Cov}(T_i, \\mathbf{X_i}) \\neq 0\\)\n\n\n\n\nTwo possible implications:\n\n\n\\(se(\\hat{\\beta_T})\\) may be larger than in randomized experiments.\n\n\nif the linear model is misspecified, \\(\\hat{\\beta_T}\\) may be biased and inconsistent.\n\n\nif the relation between \\(Y_i\\) and \\(\\mathbf{X_i}\\) is in fact non-linear, this spills over to the estimation of \\(\\hat{\\beta_T}\\) via the correlation of \\(T_i\\) and \\(\\mathbf{X_i}\\)."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#identification-with-linear-regression-2",
+    "href": "slides/04_ob_conf.html#identification-with-linear-regression-2",
+    "title": "(4) Observed Confounding",
+    "section": "Identification with Linear Regression",
+    "text": "Identification with Linear Regression\n\nPossible misspecifications: Omission of …\n\n\nMultiplicative interactions between covariates: e.g. \\(X_{i1} \\cdot X_{i2}\\).\n\n\nHigher order terms: e.g. \\(X_{i1} \\cdot X_{i1} = X_{i1}^2\\).\n\n\nInteractions between treatment and covariates to allow for effect heterogeneity: e.g. \\(T_i \\cdot X_{i1}\\).\n\n\n\n\n\nMore flexible model:\n\n\\(\\mathbb{E}[Y_i | T_i, \\mathbf{X_i}] = \\beta_0 + \\beta_T T_i + \\mathbf{\\beta_{X}' X_i} + \\mathbf{\\beta_{TX}' X_i}T_i + \\beta_{X^2_1} X^2_{i1} + \\dots + \\beta_{X_1X_2} X_{i1} X_{i2} + \\dots\\)\n\\(\\tau_{\\text{CATE}} = \\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i}] - \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i}]\\)\n\\(\\tau_{\\text{CATE}} = \\beta_T + \\mathbf{\\beta_{TX}' X_i}\\)\n\\(\\tau_{\\text{ATE}} = \\mathbb{E_X}[\\tau_{\\text{CATE}}] = \\mathbb{E_X}[\\beta_T + \\mathbf{\\beta_{TX}' X_i}] = \\beta_T + \\beta_{TX}'\\mathbb{E_X}[\\mathbf{X_i}] = \\beta_T + \\mathbf{\\beta_{TX}'\\overline{X}}\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#identification-with-linear-regression-3",
+    "href": "slides/04_ob_conf.html#identification-with-linear-regression-3",
+    "title": "(4) Observed Confounding",
+    "section": "Identification with Linear Regression",
+    "text": "Identification with Linear Regression\n\nAlternatively, estimate two separate models for treated and control group:\n\n\\(\\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i}] = \\beta_{0,1} + \\mathbf{\\beta_{X,1}' X_i} + \\beta_{X^2_1,1} X^2_{i1} + \\dots + \\beta_{X_1X_2,1} X_{i1} X_{i2} + \\dots\\)\n\\(\\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i}] = \\beta_{0,0} + \\mathbf{\\beta_{X,0}' X_i} + \\beta_{X^2_1,0} X^2_{i1} + \\dots + \\beta_{X_1X_2,0} X_{i1} X_{i2} + \\dots\\)\n\\(\\tau_{\\text{CATE}} = \\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i}] - \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i}]\\)\n\nThen averaging:\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E_X}[\\tau_{\\text{CATE}}] = \\mathbb{E_X}[\\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i}] - \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i}]]\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#conditional-outcome-regression-example",
+    "href": "slides/04_ob_conf.html#conditional-outcome-regression-example",
+    "title": "(4) Observed Confounding",
+    "section": "Conditional Outcome Regression: Example",
+    "text": "Conditional Outcome Regression: Example\n\nAssess the impact of participating in the U.S. National Supported Work (NSW) training program targeted to 445 individuals with social and economic problems on their real earnings.\n\n\nlibrary(Matching)                       # load Matching package for the data\nlibrary(Jmisc)                          # load Jmisc package with demean function\nlibrary(lmtest)                         # load lmtest package\nlibrary(sandwich)                       # load sandwich package\nlibrary(modelsummary)                   # load modelsummary package\ndata(lalonde)                           # load lalonde data\nattach(lalonde)                         # store all variables in own objects\nT = treat                                 # define treatment (training)\nY = re78                                  # define outcome \nX = cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\nDXdemeaned = T * demean(X)                  # interaction of D and demeaned X \nols = lm(Y ~ T + X + DXdemeaned)                # run OLS regression\nmodelsummary(ols, vcov = sandwich::vcovHC, estimate = \"est = {estimate} (se = {std.error}, t = {statistic}){stars}\", statistic = \"p = {p.value}, CI = [{conf.low}, {conf.high}]\", gof_map = c(\"r.squared\"), coef_omit = \"X\")  \n\n \n\n  \n    \n    \n    tinytable_418i2gk38zyydi5ho9y5\n    \n    \n    \n    \n  \n\n  \n    \n      \n        \n        \n              \n                 \n                (1)\n              \n        \n        \n        \n                \n                  (Intercept)\n                  est = 7161.163 (se = 3975.959, t = 1.801)+\n                \n                \n                             \n                  p = 0.072, CI = [-653.935, 14976.260]     \n                \n                \n                  T          \n                  est = 1583.468 (se = 711.171, t = 2.227)* \n                \n                \n                             \n                  p = 0.027, CI = [185.600, 2981.336]       \n                \n                \n                  R2         \n                  0.104"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#matching-idea",
+    "href": "slides/04_ob_conf.html#matching-idea",
+    "title": "(4) Observed Confounding",
+    "section": "Matching Idea",
+    "text": "Matching Idea"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#matching-methods",
+    "href": "slides/04_ob_conf.html#matching-methods",
+    "title": "(4) Observed Confounding",
+    "section": "Matching Methods",
+    "text": "Matching Methods\n\nIdea: find and match treated and nontreated observations with similar (or ideally identical) covariate values.\n\ncreate a sample of treated and nontreated groups that are comparable in terms of covariate distributions, just as it would be the case in a successful experiment.\nWith or without replacement.\n1:1 or 1:M matching.\n\nMethods:\n\nNearest Neighbor Matching\nRadius (Caliper) Matching\nPropensity Score Matching"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#nearest-neighbor-matching",
+    "href": "slides/04_ob_conf.html#nearest-neighbor-matching",
+    "title": "(4) Observed Confounding",
+    "section": "Nearest Neighbor Matching",
+    "text": "Nearest Neighbor Matching\n\nFor each treated unit, find the one nearest nontreated unit in terms of covariate values (1:1 matching):\n\nAverage treatment effect on the treated (ATT):\n\\(\\hat{\\tau}_{\\text{ATT}} = \\frac{1}{n_1} \\sum_{i:T_i=1} \\left( Y_i - \\sum_{j:T_j=0} I( \\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert = \\min_{l:T_l=0} \\lVert \\mathbf{X_l} - \\mathbf{X_i} \\rVert) Y_j) \\right)\\)\nAverage treatment effect on the untreated (ATU):\n\\(\\hat{\\tau}_{\\text{ATU}} = \\frac{1}{n_0} \\sum_{i:T_i=0} \\left( Y_i - \\sum_{j:T_j=1} I( \\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert = \\min_{l:T_l=1} \\lVert \\mathbf{X_l} - \\mathbf{X_i} \\rVert) Y_j) \\right)\\)\nAverage treatment effect (ATE):\n\\(\\hat{\\tau}_{\\text{ATE}} = \\frac{n_1}{n} \\hat{\\tau}_{\\text{ATT}} +  \\frac{n_0}{n} \\hat{\\tau}_{\\text{ATU}}\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#distance-measures",
+    "href": "slides/04_ob_conf.html#distance-measures",
+    "title": "(4) Observed Confounding",
+    "section": "Distance Measures",
+    "text": "Distance Measures\n\nEuclidean Distance:\n\n\\(\\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert = \\sqrt{ \\sum_{k=1}^{K} (X_{jk} - X_{ik})^2 }\\)\nStandardized version by normalizing based on the variance of the covariates:\n\\(\\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert = \\sqrt{ \\sum_{k=1}^{K} \\frac{(X_{jk} - X_{ik})^2}{\\hat{\\text{Var}}(X_k)} }\\)\n\nMahalanobis Distance:\n\nIn addition, normalizing based on covariance with remaining covariates:\n\\(\\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert = \\sqrt{\\sum_{k=1}^{K} \\sum_{l=1}^{K} \\frac{(X_{jk} - X_{ik}) (X_{jl} - X_{il})}{\\hat{\\text{Cov}}(X_k, X_l)}}\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#m-matching",
+    "href": "slides/04_ob_conf.html#m-matching",
+    "title": "(4) Observed Confounding",
+    "section": "1:M Matching",
+    "text": "1:M Matching\n\n1:M matching with fixed M:\n\n\\(\\hat{\\tau}_{\\text{ATT}} = \\frac{1}{n_1} \\sum_{i:T_i=1} \\left[ Y_i - \\hat{\\mu_0}(\\mathbf{X_i}) \\right]\\) with \\(\\hat{\\mu}_{0}(\\mathbf{X_i}) = \\frac{1}{M} \\sum_{j \\in J(i:T_i=1)} Y_j\\)\n\\(\\hat{\\tau}_{\\text{ATU}} = \\frac{1}{n_0} \\sum_{i:T_i=0} \\left[ Y_i - \\hat{\\mu_1}(\\mathbf{X_i}) \\right]\\) with \\(\\hat{\\mu}_{1}(\\mathbf{X_i}) = \\frac{1}{M} \\sum_{j \\in J(i:T_i=0)} Y_j\\)\n\\(\\hat{\\tau}_{\\text{ATE}} = \\frac{n_1}{n} \\hat{\\tau}_{\\text{ATT}} +  \\frac{n_0}{n} \\hat{\\tau}_{\\text{ATU}}\\)\n\n\n\n\nRegression-based correction for the bias which comes from not finding fully comparable matches for a reference observation:\n\n\\(\\hat{\\mu}_{0}(\\mathbf{X_i}) = \\frac{1}{M} \\sum_{j \\in J(i:T_i=1)} [Y_j - (\\tilde{\\mu}_{0}(\\mathbf{X_j}) - \\tilde{\\mu}_{0}(\\mathbf{X_i}))]\\)\n\\(\\hat{\\mu}_{1}(\\mathbf{X_i}) = \\frac{1}{M} \\sum_{j \\in J(i:T_i=0)} [Y_j - (\\tilde{\\mu}_{1}(\\mathbf{X_j}) - \\tilde{\\mu}_{1}(\\mathbf{X_i}))]\\)\nwhere \\(\\tilde{\\mu}_{0}(\\mathbf{X_i})\\) (respectively, \\(\\tilde{\\mu}_{1}(\\mathbf{X_i})\\)) is the predicted value of \\(Y\\) for observation \\(i\\) from a regression of \\(Y\\) on \\(X\\) among the untreated (respectively, treated) group."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#radius-caliper-matching",
+    "href": "slides/04_ob_conf.html#radius-caliper-matching",
+    "title": "(4) Observed Confounding",
+    "section": "Radius (Caliper) Matching",
+    "text": "Radius (Caliper) Matching\n\nCaliper \\(C\\) (implies a variable M):\n\n\\(\\hat{\\mu}_{0/1}(\\mathbf{X_i}) = \\frac{\\sum_{j : T_j = 0/1} I\\left(\\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert \\leq C \\right) \\cdot Y_i}{\\sum_{j : T_j = 0/1} I\\left(\\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert \\leq C \\right)}\\)\nWith a kernel function \\(\\kappa\\):\n\\(\\hat{\\mu}_{0/1}(\\mathbf{X_i}) = \\frac{\\sum_{j : T_j = 0/1} \\kappa\\left(\\frac{\\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert}{C}\\right) \\cdot Y_i}{\\sum_{j : T_j = 0/1} \\kappa\\left(\\frac{\\lVert \\mathbf{X_j} - \\mathbf{X_i} \\rVert}{C}\\right)}\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#covariate-matching-example",
+    "href": "slides/04_ob_conf.html#covariate-matching-example",
+    "title": "(4) Observed Confounding",
+    "section": "Covariate Matching: Example",
+    "text": "Covariate Matching: Example\n\nAssess the impact of participating in the U.S. National Supported Work (NSW) training program targeted to 445 individuals with social and economic problems on their real earnings.\n\n\nlibrary(Matching)                       # load Matching package for the data\ndata(lalonde)                           # load lalonde data\nattach(lalonde)                         # store all variables in own objects\nT = treat                               # define treatment (training)\nY = re78                                # define outcome \nX = cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\npairmatching = Match(Y=Y, Tr=T, X=X)    # pair matching\nsummary(pairmatching)              # matching output\n\n\nEstimate...  1686.1 \nAI SE......  866.4 \nT-stat.....  1.9461 \np.val......  0.051642 \n\nOriginal number of observations..............  445 \nOriginal number of treated obs...............  185 \nMatched number of observations...............  185 \nMatched number of observations  (unweighted).  267 \n\npairmatching = Match(Y=Y, Tr=T, X=X, M=3, BiasAdjust = TRUE, estimand = \"ATE\", caliper = NULL)    # pair matching\nsummary(pairmatching)              # matching output\n\n\nEstimate...  1396.3 \nAI SE......  712.09 \nT-stat.....  1.9609 \np.val......  0.049893 \n\nOriginal number of observations..............  445 \nOriginal number of treated obs...............  185 \nMatched number of observations...............  445 \nMatched number of observations  (unweighted).  1525"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#propensity-score-matching",
+    "href": "slides/04_ob_conf.html#propensity-score-matching",
+    "title": "(4) Observed Confounding",
+    "section": "Propensity Score Matching",
+    "text": "Propensity Score Matching\n\nCurse of dimensionality as caveat of covariate matching:\n\nDirectly controlling for and matching observations based on \\(\\mathbf{X}\\) in a flexible, non-parametric way increasingly difficult with many covariates.\nProbability to find matches with similar values in all covariates decays rapidly.\n\n\n\n\n\n\nInstead controlling for the Propensity Score:\n\nConditional treatment probability given the covariates, denoted by\n\\(PS(\\mathbf{X_i}) = P(T_i = 1 | \\mathbf{X_i})\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#propensity-score",
+    "href": "slides/04_ob_conf.html#propensity-score",
+    "title": "(4) Observed Confounding",
+    "section": "Propensity Score",
+    "text": "Propensity Score\n\nWe need the following theorem to hold:\n\n\n\n\nTheorem 4.1: “Propensity Score”.\n\n\nUnconfoundedness given \\(\\mathbf{X}\\) implies unconfoundedness given the propensity score \\(PS(\\mathbf{X})\\).\nFormally, \\((Y(1), Y(0)) \\perp\\!\\!\\!\\perp T \\, | \\, \\mathbf{X} \\implies (Y(1), Y(0)) \\perp\\!\\!\\!\\perp PS(\\mathbf{X})\\).\n\n\n\n\n\\(PS(\\mathbf{X_i})\\) can be viewed as dimension reduction tool\n\ncontrolling for a one-dimensional scalar instead of \\(\\mathbf{X}\\).\n\nIf theorem holds, then we can state for the treatments assignment mechanism: \\(P(T_i = 1 | Y_i(1), Y_i(0), PS(\\mathbf{X_i})) = P(T_i = 1 | PS(\\mathbf{X_i}))\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#propensity-score-1",
+    "href": "slides/04_ob_conf.html#propensity-score-1",
+    "title": "(4) Observed Confounding",
+    "section": "Propensity Score",
+    "text": "Propensity Score\n\nProof:\n\n\\[\n\\begin{align*}\nP(T_i = 1 | Y_i(1), Y_i(0), PS(\\mathbf{X_i})) &= \\mathbb{E}[T_i | Y_i(1), Y_i(0), PS(\\mathbf{X_i})] \\\\\n&\\text{(T is binary: turn probability into expectation)} \\\\\n&= \\mathbb{E}[\\mathbb{E}[T_i | Y_i(1), Y_i(0), PS(\\mathbf{X_i}), \\mathbf{X_i}] | Y_i(1), Y_i(0), PS(\\mathbf{X_i})] \\\\\n&\\text{(law of iterated expectations: introduce X)} \\\\\n&= \\mathbb{E}[\\mathbb{E}[T_i | Y_i(1), Y_i(0), \\mathbf{X_i}] | Y_i(1), Y_i(0), PS(\\mathbf{X_i})] \\\\\n&\\text{(remove PS(X) from inner expectation, because it is redundant if we have X)} \\\\\n&= \\mathbb{E}[\\mathbb{E}[T_i | \\mathbf{X_i}] | Y_i(1), Y_i(0), PS(\\mathbf{X_i})] \\\\\n&\\text{(apply original unconfoundedness and eliminate Y_i(t))} \\\\\n&= \\mathbb{E}[P(T_i = 1 | \\mathbf{X_i}) | Y_i(1), Y_i(0), PS(\\mathbf{X_i})] \\\\\n&\\text{(T is binary: turn expectation into probability)} \\\\\n&= \\mathbb{E}[PS(\\mathbf{X_i}) | Y_i(1), Y_i(0), PS(\\mathbf{X_i})] \\\\\n&\\text{(conditioning on itself makes addional info from Y_i(t) superfluous)} \\\\\n&= PS(\\mathbf{X_i}) = P(T_i = 1 | \\mathbf{X_i})\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#propensity-score-estimation-and-use",
+    "href": "slides/04_ob_conf.html#propensity-score-estimation-and-use",
+    "title": "(4) Observed Confounding",
+    "section": "Propensity Score Estimation and Use",
+    "text": "Propensity Score Estimation and Use\n\nTrue \\(PS(\\mathbf{X_i})\\) for each observation \\(i\\) is unknown and needs to be estimated.\nTypically a parametric binary choice model is used of the form:\n\n\\(PS(\\mathbf{X_i}) = P(T_i = 1 | \\mathbf{X_i}) = \\Lambda(\\beta_0 + \\beta_1 X_{i1} + \\ldots + \\beta_k X_{ik})\\)\nNon-linear link function \\(\\Lambda\\):\n\nNormal distribution function: Probit regression model\nLogistic distribution function: Logit regression model\n\n\n\n\n\nParameters \\(\\mathbf{\\hat{\\beta}}\\) are estimated by maximum likelihood estimation (MLE):\n\n\\(\\mathbf{\\hat{\\beta}} = \\arg\\max_{\\beta} \\sum_{i=1}^n \\left[ T_i \\ln \\Lambda(\\beta_0 + \\beta_1 X_{i1} + \\ldots + \\beta_k X_{ik}) + (1 - T_i) \\ln (1 - \\Lambda(\\beta_0 + \\beta_1 X_{i1} + \\ldots + \\beta_k X_{ik})) \\right]\\)\n\n\\(\\hat{PS}(\\mathbf{X_i})\\) is then computed based on the following prediction:\n\n\\(\\hat{PS}(\\mathbf{X_i}) = \\Lambda(\\hat{\\beta}_0 + \\hat{\\beta}_1 X_{i1} + \\ldots + \\hat{\\beta}_k X_{ik})\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#propensity-score-use",
+    "href": "slides/04_ob_conf.html#propensity-score-use",
+    "title": "(4) Observed Confounding",
+    "section": "Propensity Score Use",
+    "text": "Propensity Score Use\n\nPropensity scores \\(\\hat{PS}(\\mathbf{X_i})\\) can then be used as a single scalar covariate in:\n\n\nConditional outcome regression\n\n\nCovariate matching\n\n\nInverse probability weighting (IPW)\n\n\nInference needs to take into account the estimation uncertainty of \\(\\hat{PS}(\\mathbf{X_i})\\) via:\n\n\nBias correction in variance estimation\n\n\nBootstrapping"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#propensity-score-matching-example",
+    "href": "slides/04_ob_conf.html#propensity-score-matching-example",
+    "title": "(4) Observed Confounding",
+    "section": "Propensity Score Matching: Example",
+    "text": "Propensity Score Matching: Example\n\nAssess the impact of participating in the U.S. National Supported Work (NSW) training program targeted to 445 individuals with social and economic problems on their real earnings.\n\n\n\n\nlibrary(Matching)                       # load Matching package for the data\ndata(lalonde)                           # load lalonde data\nattach(lalonde)                         # store all variables in own objects\nT = treat                               # define treatment (training)\nY = re78                                # define outcome \nX = cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\nps = glm(T ~ X, family=binomial)$fitted # estimate the propensity score by logit\npsmatching=Match(Y=Y, Tr=T, X=ps, BiasAdjust = TRUE, estimand = \"ATE\") # propensity score matching\nsummary(psmatching)              # matching output\n\n\nEstimate...  1590.7 \nAI SE......  700.77 \nT-stat.....  2.2699 \np.val......  0.023211 \n\nOriginal number of observations..............  445 \nOriginal number of treated obs...............  185 \nMatched number of observations...............  445 \nMatched number of observations  (unweighted).  709 \n\n\n\n\nlibrary(Matching)                       # load Matching package\nlibrary(boot)                           # load boot package\ndata(lalonde)                           # load lalonde data\nattach(lalonde)                         # store all variables in own objects\nT=treat                                 # define treatment (training)\nY=re78                                  # define outcome \nX=cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\nbs=function(data, indices) {            # defines function bs for bootstrapping\n  dat=data[indices,]                    # bootstrap sample according to indices \n  ps=glm(dat[,2:ncol(dat)],data=dat,family=binomial)$fitted # propensity score\n  effect=Match(Y=dat[,1], Tr=dat[,2], X=ps, BiasAdjust = TRUE, estimand = \"ATE\")$est # ATET \n  return(effect)                        # returns the estimated ATET\n}                                       # closes the function bs   \nbootdata=data.frame(Y,T,X)              # data frame for bootstrap procedure\nset.seed(1)                             # set seed\nresults = boot(data=bootdata, statistic=bs, R=999) # 999 bootstrap estimations \nresults                                 # displays the results\n\n\nORDINARY NONPARAMETRIC BOOTSTRAP\n\n\nCall:\nboot(data = bootdata, statistic = bs, R = 999)\n\n\nBootstrap Statistics :\n    original  bias    std. error\nt1*  1590.71 41.8785    771.4947\n\ntstat=results$t0/sd(results$t)          # compute the t-statistic\n2*pnorm(-abs(tstat))                    # compute the p-value\n\n           [,1]\n[1,] 0.03922158"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#inverse-probability-weighting-idea",
+    "href": "slides/04_ob_conf.html#inverse-probability-weighting-idea",
+    "title": "(4) Observed Confounding",
+    "section": "Inverse Probability Weighting: Idea",
+    "text": "Inverse Probability Weighting: Idea\n\nCreating a pseudo-population where the treatment assignment is independent of the observed covariates:\n\nWeighting each observation by the inverse of the estimated propensity score.\n\nThis idea can be expressed in the following theorem:\n\n\n\n\nTheorem 4.2: “Inverse Propensity Score Weighting”.\n\n\nGiven \\((Y(1), Y(0)) \\perp\\!\\!\\!\\perp T \\, | \\, \\mathbf{X}\\) (conditional unconfoundedness) and given \\(0 &lt; PS(\\mathbf{X_i}) &lt; 1\\) for all \\(i\\) (positivity), then:\n\\[\\tau_{\\text{ATE}} = \\mathbb{E}[Y_i(1) - Y_i(0)] = \\mathbb{E}[\\frac{T_iY_i}{PS(\\mathbf{X_i})}] - \\mathbb{E}[\\frac{(1-T_i)Y_i}{1-PS(\\mathbf{X_i})}]\\]"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#inverse-propensity-score-weighting",
+    "href": "slides/04_ob_conf.html#inverse-propensity-score-weighting",
+    "title": "(4) Observed Confounding",
+    "section": "Inverse Propensity Score Weighting",
+    "text": "Inverse Propensity Score Weighting\n\nProof for \\(\\mathbb{E}[Y_i(1)]\\):\n\n\\[\n\\begin{align*}\n\\mathbb{E}\\left[\\frac{T_iY_i}{PS(\\mathbf{X_i})}\\right] = \\mathbb{E}\\left[\\frac{T_iY_i(1)}{PS(\\mathbf{X_i})}\\right] &= \\mathbb{E}\\left[\\mathbb{E}\\left[\\frac{T_iY_i(1)}{PS(\\mathbf{X_i})} \\bigg| \\mathbf{X_i}\\right]\\right] \\\\\n&\\text{(law of iterated expectations: introduce X)} \\\\\n&= \\mathbb{E}\\left[\\frac{1}{PS(\\mathbf{X_i})} \\mathbb{E}[T_iY_i(1) | \\mathbf{X_i}]\\right] \\\\\n&\\text{(1/PS(X) is non-random given X, so it can be moved outside)} \\\\\n&= \\mathbb{E}\\left[\\frac{1}{e(X)} \\mathbb{E}(Z | X) \\mathbb{E}(Y_i(1) | \\mathbf{X_i})\\right] \\\\\n&\\text{(condional ignorability between T and Y(1) allows to separate expectations)} \\\\\n&= \\mathbb{E}\\left[\\frac{1}{PS(\\mathbf{X_i})} PS(\\mathbf{X_i}) \\mathbb{E}[Y_i(1) | \\mathbf{X_i}]\\right] \\\\\n&\\text{(E(Z∣X)=PS(X) by definition, terms cancel out)} \\\\\n&= \\mathbb{E}\\left[\\mathbb{E}[Y_i(1) | \\mathbf{X_i}]\\right] = \\mathbb{E}[Y_i(1)] \\\\\n&\\text{(law of iterated expectations)} \\\\\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#ipw-estimators",
+    "href": "slides/04_ob_conf.html#ipw-estimators",
+    "title": "(4) Observed Confounding",
+    "section": "IPW Estimators",
+    "text": "IPW Estimators\n\nTheorem 4.2 motivates the following estimator for ATE:\n\n\\(\\hat{\\tau}_{ATE} = \\frac{1}{n} \\sum_{i=1}^n \\frac{T_i Y_i}{\\hat{PS}(\\mathbf{X_i})} - \\frac{1}{n} \\sum_{i=1}^n \\frac{(1 - T_i) Y_i}{1 - \\hat{PS}(\\mathbf{X_i})}\\)\n\nNormalize the weights so that they sum up to one within the treatment groups:\n\n\\(\\hat{\\tau}_{ATE} = \\frac{\\sum_{i=1}^n \\frac{T_i Y_i}{\\hat{PS}(\\mathbf{X_i})}}{\\sum_{i=1}^n \\frac{T_i}{\\hat{PS}(\\mathbf{X_i})}} - \\frac{\\sum_{i=1}^n \\frac{(1 - T_i) Y_i}{1 - \\hat{PS}(\\mathbf{X_i})}}{\\sum_{i=1}^n \\frac{1 - T_i}{1 - \\hat{PS}(\\mathbf{X_i})}}\\)\n\n\n\n\nIPW variant Empirical Likelihood (EL) estimator:\n\nEstimating the propensity score parameters while enforcing a moment condition (e.g., equal covariate means, variances etc. across treatment groups):\n\\(\\sum_{i=1}^n \\frac{1}{n} \\left[ \\tilde{X}_i \\cdot T_i - \\frac{ \\tilde{X}_i \\cdot (1 - T_i) \\cdot \\tilde{PS}(\\mathbf{X_i})}{1 - \\tilde{PS}(\\mathbf{X_i})} \\right] = 0\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#inverse-probability-weighting-example",
+    "href": "slides/04_ob_conf.html#inverse-probability-weighting-example",
+    "title": "(4) Observed Confounding",
+    "section": "Inverse Probability Weighting: Example",
+    "text": "Inverse Probability Weighting: Example\n\nAssess the impact of participating in the U.S. National Supported Work (NSW) training program targeted to 445 individuals with social and economic problems on their real earnings.\n\n\n\n\nNormalized IPW estimator:\n\n\nlibrary(causalweight)                   # load causalweight package\nlibrary(Matching)                       # load Matching package for the data\ndata(lalonde)                           # load lalonde data\nattach(lalonde)                         # store all variables in own objects\nT = treat                               # define treatment (training)\nY = re78                                # define outcome \nX = cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\nset.seed(1)                             # set seed\nipw=treatweight(y=Y,d=T,x=X, boot=999)  # run IPW with 999 bootstraps \nipw$effect                              # show ATE\n\n[1] 1640.468\n\nipw$se                                  # show standard error\n\n[1] 678.4239\n\nipw$pval                                # show p-value\n\n[1] 0.01560364\n\n\n\n\nEmpirical Likelihood (EL) estimator to ensure mean covariate balance:\n\n\nlibrary(Matching)                       # load Matching package\ndata(lalonde)                           # load lalonde data\nattach(lalonde)                         # store all variables in own objects\nlibrary(CBPS)                           # load CBPS package\nlibrary(lmtest)                         # load lmtest package\nlibrary(sandwich)                       # load sandwich package\nT = treat                              # define treatment (training)\nY = re78                                # define outcome \nX = cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\ncbps = CBPS(T ~ X, ATT = 0)                 # covariate balancing for ATE estimation\nresults = lm(Y ~ T, weights = cbps$weights)   # weighted regression\ncoeftest(results, vcov = vcovHC)        # show results\n\n\nt test of coefficients:\n\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)  4582.71     353.65 12.9582  &lt; 2e-16 ***\nT            1699.74     705.11  2.4106  0.01633 *  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#doubly-robust-methods-idea",
+    "href": "slides/04_ob_conf.html#doubly-robust-methods-idea",
+    "title": "(4) Observed Confounding",
+    "section": "Doubly Robust Methods: Idea",
+    "text": "Doubly Robust Methods: Idea\n\nUnder conditional unconfoundedness (\\(Y(1), Y(0)) \\perp\\!\\!\\!\\perp T \\, | \\, \\mathbf{X}\\)) and positivity (\\(0 &lt; PS(\\mathbf{X_i}) &lt; 1\\)) we have seen two ways to identify the ATE:\n\nConditional outcome regression:\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}[\\mathbb{E}[Y_i | T_i = 1, \\mathbf{X_i}] - \\mathbb{E}[Y_i | T_i = 0, \\mathbf{X_i}]] = \\mathbb{E}[\\mu_1(\\mathbf{X_i}) - \\mu_0(\\mathbf{X_i})]\\)\n\nInverse probability weighting:\n\n\\(\\tau_{\\text{ATE}} = \\mathbb{E}\\left[\\frac{T_i Y_i}{PS(\\mathbf{X_i})} - \\frac{(1 - T_i) Y_i}{1 - PS(\\mathbf{X_i})}\\right]\\)\n\n\n\n\n\nIdea of doubly robust methods:\n\nCombine both approaches, such that the ATE estimator is consistent, even if only one of the two models is correctly specified."
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#doubly-robust-estimator-definition",
+    "href": "slides/04_ob_conf.html#doubly-robust-estimator-definition",
+    "title": "(4) Observed Confounding",
+    "section": "Doubly Robust Estimator: Definition",
+    "text": "Doubly Robust Estimator: Definition\n\nDoubly robust estimator is also called the Augmented Inverse Propensity Score Weighting (AIPW) estimator.\nAugmenting the outcome regression model with IPW weights:\n\n\\(\\tilde{\\mu}_{1}^{\\text{dr}} = \\mathbb{E}\\left[\\frac{T_i(Y_i - \\mu_1(X_i, \\beta_1))}{PS(\\mathbf{X_i, \\beta_{PS}})} + \\mu_1(\\mathbf{X_i,\\beta_1})\\right]\\)\n\\(\\tilde{\\mu}_{0}^{\\text{dr}} = \\mathbb{E}\\left[\\frac{(1-T_i)(Y_i - \\mu_0(X_i, \\beta_0))}{1 - PS(\\mathbf{X_i, \\beta_{PS}})} + \\mu_0(\\mathbf{X_i,\\beta_0})\\right]\\)\n\nOr rewrite, to augment the IPW estimator with outcome regression model:\n\n\\(\\tilde{\\mu}_{1}^{\\text{dr}} = \\mathbb{E}\\left[\\frac{T_iY_i}{PS(\\mathbf{X_i, \\beta_{PS}})} - \\frac{T_i - PS(\\mathbf{X_i, \\beta_{PS}})}{PS(\\mathbf{X_i, \\beta_{PS}})}\\mu_1(\\mathbf{X_i,\\beta_1})\\right]\\)\n\\(\\tilde{\\mu}_{0}^{\\text{dr}} = \\mathbb{E}\\left[\\frac{(1-T_i)Y_i}{1-PS(\\mathbf{X_i, \\beta_{PS}})} - \\frac{PS(\\mathbf{X_i, \\beta_{PS}}) - T_i}{1-PS(\\mathbf{X_i, \\beta_{PS}})}\\mu_0(\\mathbf{X_i,\\beta_0})\\right]\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#doubly-robust-estimator-theorem",
+    "href": "slides/04_ob_conf.html#doubly-robust-estimator-theorem",
+    "title": "(4) Observed Confounding",
+    "section": "Doubly Robust Estimator: Theorem",
+    "text": "Doubly Robust Estimator: Theorem\n\nAugmentation leads to the following theoretical properties:\n\n\n\n\nTheorem 4.3: “Doubly Robust Estimator”.\n\n\nGiven \\((Y(1), Y(0)) \\perp\\!\\!\\!\\perp T \\, | \\, \\mathbf{X}\\) (conditional unconfoundedness) and given \\(0 &lt; PS(\\mathbf{X_i}) &lt; 1\\) for all \\(i\\) (positivity), then:\n\nIf either \\(PS(\\mathbf{X_i, \\beta_{PS}}) = PS(\\mathbf{X_i})\\) or \\(\\mu_1(\\mathbf{X_i,\\beta_1}) = \\mu_1(\\mathbf{X_i})\\), then \\(\\tilde{\\mu}_{1}^{\\text{dr}} = \\mathbb{E}[Y_i(1)]\\)\nIf either \\(PS(\\mathbf{X_i, \\beta_{PS}}) = PS(\\mathbf{X_i})\\) or \\(\\mu_0(\\mathbf{X_i,\\beta_0}) = \\mu_0(\\mathbf{X_i})\\), then \\(\\tilde{\\mu}_{0}^{\\text{dr}} = \\mathbb{E}[Y_i(0)]\\)\nIf either \\(PS(\\mathbf{X_i, \\beta_{PS}}) = PS(\\mathbf{X_i})\\) or \\(\\{\\mu_1(\\mathbf{X_i,\\beta_1}) = \\mu_1(\\mathbf{X_i}), \\mu_0(\\mathbf{X_i,\\beta_0}) = \\mu_0(\\mathbf{X_i})\\}\\), then \\(\\tilde{\\mu}_{1}^{\\text{dr}} - \\tilde{\\mu}_{0}^{\\text{dr}} = \\tau_{\\text{ATE}}^{\\text{dr}}\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#doubly-robust-estimator-theorem-1",
+    "href": "slides/04_ob_conf.html#doubly-robust-estimator-theorem-1",
+    "title": "(4) Observed Confounding",
+    "section": "Doubly Robust Estimator: Theorem",
+    "text": "Doubly Robust Estimator: Theorem\n\nProof for \\(\\tilde{\\mu}_{1}^{\\text{dr}} = \\mathbb{E}[Y_i(1)]\\):\n\n\\[\n\\begin{align*}\n\\tilde{\\mu}_{1}^{\\text{dr}} - \\mathbb{E}[Y_i(1)] &= \\mathbb{E}\\left[\\frac{T_i(Y_i(1) - \\mu_1(X_i, \\beta_1))}{PS(\\mathbf{X_i, \\beta_{PS}})} - (Y_i(1) - \\mu_1(\\mathbf{X_i,\\beta_1}))\\right] \\\\\n&\\text{(by definition)} \\\\\n&= \\mathbb{E}\\left[\\frac{T_i - PS(\\mathbf{X_i, \\beta_{PS}})}{PS(\\mathbf{X_i, \\beta_{PS}})}(Y_i(1) - \\mu_1(\\mathbf{X_i,\\beta_1}))\\right] \\\\\n&\\text{(combining terms)} \\\\\n&= \\mathbb{E}\\left(\\mathbb{E}\\left[\\frac{T_i - PS(\\mathbf{X_i, \\beta_{PS}})}{PS(\\mathbf{X_i, \\beta_{PS}})}(Y_i(1) - \\mu_1(\\mathbf{X_i,\\beta_1})) \\bigg| \\mathbf{X_i}\\right]\\right) \\\\\n&\\text{(law of iterated expectations)} \\\\\n&= \\mathbb{E}\\left(\\mathbb{E}\\left[\\frac{T_i - PS(\\mathbf{X_i, \\beta_{PS}})}{PS(\\mathbf{X_i, \\beta_{PS}})} \\bigg| \\mathbf{X_i}\\right] \\cdot \\mathbb{E}\\left[Y_i(1) - \\mu_1(\\mathbf{X_i,\\beta_1})) \\bigg| \\mathbf{X_i}\\right]\\right) \\\\\n&\\text{(ignorability allows to separate expectations)} \\\\\n&= \\mathbb{E}\\left(\\frac{PS(\\mathbf{X_i}) - PS(\\mathbf{X_i, \\beta_{PS}})}{PS(\\mathbf{X_i, \\beta_{PS}})}  \\cdot \\left(\\mu_1(\\mathbf{X_i}) - \\mu_1(\\mathbf{X_i,\\beta_1})) \\right)\\right) \\\\\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#doubly-robust-estimator-sample-version",
+    "href": "slides/04_ob_conf.html#doubly-robust-estimator-sample-version",
+    "title": "(4) Observed Confounding",
+    "section": "Doubly Robust Estimator: Sample Version",
+    "text": "Doubly Robust Estimator: Sample Version\n\nStep 1: obtain the fitted values of the propensity scores:\n\n\\(PS(\\mathbf{X_i, \\hat{\\beta}_{PS}})\\).\n\nStep 2: obtain the fitted values of the outcome regressions:\n\n\\(\\mu_1(\\mathbf{X_i,\\hat{\\beta_1}})\\) and \\(\\mu_0(\\mathbf{X_i,\\hat{\\beta_0}})\\).\n\nStep 3: construct the doubly robust estimator:\n\n\\(\\hat{\\tau}_{\\text{ATE}}^{\\text{dr}} = \\hat{\\mu}_{1}^{\\text{dr}} - \\hat{\\mu}_{0}^{\\text{dr}}\\) with (definition of augmented outcome model)\n\\(\\hat{\\mu}_{1}^{\\text{dr}} = \\frac{1}{n} \\sum_{i=1}^n \\left[\\frac{T_i(Y_i - \\mu_1(X_i, \\hat{\\beta_1)})}{PS(\\mathbf{X_i, \\hat{\\beta}_{PS}})} + \\mu_1(\\mathbf{X_i,\\hat{\\beta_1}})\\right]\\)\n\\(\\hat{\\mu}_{0}^{\\text{dr}} = \\frac{1}{n} \\sum_{i=1}^n \\left[\\frac{(1-T_i)(Y_i - \\mu_0(X_i, \\hat{\\beta_0)})}{1- PS(\\mathbf{X_i, \\hat{\\beta}_{PS}})} + \\mu_0(\\mathbf{X_i,\\hat{\\beta_0}})\\right]\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#doubly-robust-estimator-sample-version-1",
+    "href": "slides/04_ob_conf.html#doubly-robust-estimator-sample-version-1",
+    "title": "(4) Observed Confounding",
+    "section": "Doubly Robust Estimator: Sample Version",
+    "text": "Doubly Robust Estimator: Sample Version\n\nBy definition of the augmented IPW estimator, we can also write:\n\n\\(\\hat{\\mu}_{1}^{\\text{dr}} = \\mathbb{E}\\left[\\frac{T_iY_i}{PS(\\mathbf{X_i, \\hat{\\beta}_{PS}})} - \\frac{T_i - PS(\\mathbf{X_i, \\hat{\\beta_{PS}}})}{PS(\\mathbf{X_i, \\hat{\\beta_{PS}}})}\\mu_1(\\mathbf{X_i,\\hat{\\beta_1}})\\right]\\)\n\\(\\hat{\\mu}_{0}^{\\text{dr}} = \\mathbb{E}\\left[\\frac{(1-T_i)Y_i}{1-PS(\\mathbf{X_i, \\hat{\\beta_{PS}}})} - \\frac{PS(\\mathbf{X_i, \\hat{\\beta_{PS}}}) - T_i}{1-PS(\\mathbf{X_i, \\hat{\\beta_{PS}}})}\\mu_0(\\mathbf{X_i,\\hat{\\beta_0}})\\right]\\)\n\n\n\n\nFinally, in augmentation perspective:\n\n\\(\\hat{\\tau}_{\\text{ATE}}^{\\text{dr}} = \\hat{\\tau}_{\\text{ATE}}^{\\text{reg}} + \\frac{1}{n} \\sum_{i=1}^n \\frac{T_i(Y_i - \\mu_1(X_i, \\hat{\\beta_1)})}{PS(\\mathbf{X_i, \\hat{\\beta}_{PS}})} - \\frac{1}{n} \\sum_{i=1}^n \\frac{(1-T_i)(Y_i - \\mu_0(X_i, \\hat{\\beta_0)})}{1 - PS(\\mathbf{X_i, \\hat{\\beta}_{PS}})}\\)\n\\(\\hat{\\tau}_{\\text{ATE}}^{\\text{dr}} = \\hat{\\tau}_{\\text{ATE}}^{\\text{ipw}} - \\frac{1}{n} \\sum_{i=1}^n \\frac{T_i - PS(\\mathbf{X_i, \\hat{\\beta_{PS}}})}{PS(\\mathbf{X_i, \\hat{\\beta_{PS}}})}\\mu_1(\\mathbf{X_i,\\hat{\\beta_1}}) + \\frac{1}{n} \\sum_{i=1}^n \\frac{PS(\\mathbf{X_i, \\hat{\\beta_{PS}}}) - T_i}{1-PS(\\mathbf{X_i, \\hat{\\beta_{PS}}})}\\mu_0(\\mathbf{X_i,\\hat{\\beta_0}})\\)"
+  },
+  {
+    "objectID": "slides/04_ob_conf.html#doubly-robust-estimator-example",
+    "href": "slides/04_ob_conf.html#doubly-robust-estimator-example",
+    "title": "(4) Observed Confounding",
+    "section": "Doubly Robust Estimator: Example",
+    "text": "Doubly Robust Estimator: Example\n\nAssess the impact of participating in the U.S. National Supported Work (NSW) training program targeted to 445 individuals with social and economic problems on their real earnings.\n\n\nlibrary(Matching)                       # load Matching package\nlibrary(drgee)                          # load drgee package\nT = treat                              # define treatment (training)\nY = re78                                # define outcome \nX = cbind(age,educ,nodegr,married,black,hisp,re74,re75,u74,u75) # covariates\ndr = drgee(oformula = formula(Y ~ X), eformula = formula(T ~ X), elink=\"logit\") # DR reg\nsummary(dr)                             # show results\n\n\nCall:  drgee(oformula = formula(Y ~ X), eformula = formula(T ~ X), elink = \"logit\")\n\nOutcome:  Y \n\nExposure:  T \n\nCovariates:  Xage,Xeduc,Xnodegr,Xmarried,Xblack,Xhisp,Xre74,Xre75,Xu74,Xu75 \n\nMain model:  Y ~ T \n\nOutcome nuisance model:  Y ~ Xage + Xeduc + Xnodegr + Xmarried + Xblack + Xhisp + Xre74 + Xre75 + Xu74 + Xu75 \n\nOutcome link function:  identity \n\nExposure nuisance model:  T ~ Xage + Xeduc + Xnodegr + Xmarried + Xblack + Xhisp + Xre74 + Xre75 + Xu74 + Xu75 \n\nExposure link function:  logit \n\n  Estimate Std. Error z value Pr(&gt;|z|)  \nT   1674.1      672.4    2.49   0.0128 *\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\n(Note: The estimated parameters quantify the conditional\nexposure-outcome association, given the covariates\nincluded in the nuisance models)\n\n 445  complete observations used"
   }
 ]
