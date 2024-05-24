@@ -1,3 +1,13 @@
+# Open Issues
+
+- [x] Use local fonts
+- [ ] Code fonts
+- [ ] Code background color (should be blue)
+- [ ] Color of graphs not correct (which color scheme?)
+- [ ] Footer too small
+- [ ] Content does not fill width on all devices
+- [ ] Code highlighting is diffirent for bright / dark modus
+
 # presentations
 Presentations with Reveal.js
 
